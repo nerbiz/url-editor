@@ -15,7 +15,7 @@
   ],
   "autoload": {
     "psr-4": {
-      "Nerbiz\\": "src"
+      "Nerbiz\\UrlEditor\\": "src"
     }
   },
   "support" : {

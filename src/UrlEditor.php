@@ -6,6 +6,8 @@ use Nerbiz\UrlEditor\Properties\Fragment;
 use Nerbiz\UrlEditor\Properties\Parameters;
 use Nerbiz\UrlEditor\Properties\Slugs;
 
+use Exception;
+
 class UrlEditor
 {
     /**
@@ -47,7 +49,7 @@ class UrlEditor
     public function __construct(string $url = null)
     {
         if ($url !== null) {
-            $this->url = $url;
+            $this->setUrl($url);
         } else {
             $this->url = sprintf(
                 'http%s://%s%s',
@@ -63,6 +65,24 @@ class UrlEditor
         $this->parameters = new Parameters($this->urlParts['query'] ?? null);
         $this->slugs = new Slugs($this->urlParts['path'] ?? null);
         $this->fragment = new Fragment($this->urlParts['fragment'] ?? null);
+    }
+
+    /**
+     * @param  string $url
+     * @return self
+     */
+    public function setUrl(string $url) : self
+    {
+        if (filter_var($url, FILTER_VALIDATE_URL) === false) {
+            throw new \Exception(sprintf(
+                "%s(): invalid URL provided",
+                __METHOD__
+            ));
+        }
+
+        $this->url = $url;
+
+        return $this;
     }
 
     /**
