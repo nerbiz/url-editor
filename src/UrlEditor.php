@@ -2,7 +2,7 @@
 
 namespace Nerbiz;
 
-class Url
+class UrlEditor
 {
     /**
      * The URL to work with
