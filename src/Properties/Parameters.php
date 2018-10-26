@@ -131,9 +131,9 @@ class Parameters
      */
     public function removeAt(int $index) : self
     {
-        $index = -1;
+        $counter = -1;
         foreach ($this->parameters as $key => $value) {
-            if (++$index === $index) {
+            if (++$counter === $index) {
                 unset($this->parameters[$key]);
                 break;
             }
@@ -166,7 +166,7 @@ class Parameters
      */
     public function toArray() : array
     {
-        return $this->parameters;
+        return $this->get();
     }
 
     /**

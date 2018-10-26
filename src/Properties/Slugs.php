@@ -110,7 +110,7 @@ class Slugs
     public function remove(string $slug, bool $all = false) : self
     {
         while (($key = array_search($slug, $this->slugs)) !== false) {
-            unset($a[$key]);
+            unset($this->slugs[$key]);
 
             // Keep looping, if all occurences need to be removed
             if (! $all) {
@@ -148,7 +148,7 @@ class Slugs
      */
     public function toArray() : array
     {
-        return $this->slugs;
+        return $this->get();
     }
 
     /**
