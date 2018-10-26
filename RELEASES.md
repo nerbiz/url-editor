@@ -1,5 +1,10 @@
 # Release notes
 
+## 1.0.1
+
+* Fixed: autoload section in composer.json.
+* Added URL validation.
+
 ## 1.0.0
 
 * Divided logic into separate classes.
