@@ -1,9 +1,28 @@
 <?php
 
-namespace Nerbiz;
+namespace Nerbiz\UrlEditor;
+
+use Nerbiz\UrlEditor\Properties\Fragment;
+use Nerbiz\UrlEditor\Properties\Parameters;
+use Nerbiz\UrlEditor\Properties\Slugs;
 
 class UrlEditor
 {
+    /**
+     * @var Fragment
+     */
+    protected $fragment;
+
+    /**
+     * @var Parameters
+     */
+    protected $parameters;
+
+    /**
+     * @var Slugs
+     */
+    protected $slugs;
+
     /**
      * The URL to work with
      * @var string
@@ -17,16 +36,10 @@ class UrlEditor
     protected $urlParts;
 
     /**
-     * The query parameters of the URL
-     * @var array
+     * Whether the URL is secure (https) or not (http)
+     * @var bool
      */
-    protected $queryParameters = [];
-
-    /**
-     * The fragment of the URL
-     * @var string|null
-     */
-    protected $fragment = null;
+    protected $isSecure;
 
     /**
      * @param string|null $url The URL to work with, current URL if omitted
@@ -45,39 +58,11 @@ class UrlEditor
         }
 
         $this->urlParts = parse_url($this->url);
-        $this->setInitialParametersArray();
-        $this->fragment = $this->urlParts['fragment'] ?? null;
-    }
+        $this->setIsSecure(mb_substr($this->urlParts['scheme'], 0, 5) === 'https');
 
-    /**
-     * Set the initial query parameter array
-     * @return void
-     */
-    protected function setInitialParametersArray() : void
-    {
-        if (isset($this->urlParts['query'])) {
-            // Add the parameters, if there are any
-            $parts = explode('&', $this->urlParts['query']);
-            if (count($parts) > 0) {
-                foreach ($parts as $part) {
-                    // If there is no equals sign, the value is null
-                    if (mb_strpos($part, '=') === false) {
-                        $this->queryParameters[$part] = null;
-                    } else {
-                        // Get the parameter name and value (decoded)
-                        list($key, $value) = explode('=', $part);
-                        $value = urldecode($value);
-
-                        // An empty string means null
-                        if ($value === '') {
-                            $value = null;
-                        }
-
-                        $this->queryParameters[$key] = $value;
-                    }
-                }
-            }
-        }
+        $this->parameters = new Parameters($this->urlParts['query'] ?? null);
+        $this->slugs = new Slugs($this->urlParts['path'] ?? null);
+        $this->fragment = new Fragment($this->urlParts['fragment'] ?? null);
     }
 
     /**
@@ -90,161 +75,21 @@ class UrlEditor
     }
 
     /**
-     * Get the scheme of the URL
-     * @return string
+     * @return bool
      */
-    public function getScheme() : string
+    public function isSecure() : bool
     {
-        return $this->urlParts['scheme'];
+        return $this->isSecure;
     }
 
     /**
-     * Get the host of the URL
-     * @return string
+     * @param bool  $secure
      */
-    public function getHost() : string
+    public function setIsSecure(bool $secure) : self
     {
-        return $this->urlParts['host'];
-    }
-
-    /**
-     * Get the path of the URL
-     * @return string
-     */
-    public function getPath() : string
-    {
-        return $this->urlParts['path'];
-    }
-
-    /**
-     * Get the paths of the URL as an array
-     * @return array
-     */
-    public function getPathArray() : array
-    {
-        return explode('/', trim($this->urlParts['path'], '/'));
-    }
-
-    /**
-     * Get the query parameters of the URL
-     * @return string|null
-     */
-    public function getParameters() : ?string
-    {
-        return $this->urlParts['query'] ?? null;
-    }
-
-    /**
-     * Get the query parameters as an array
-     * @return array
-     */
-    public function getParametersArray() : array
-    {
-        return $this->queryParameters;
-    }
-
-    /**
-     * See whether a parameter exists in the URL (even if the value is null)
-     * @param  string  $key
-     * @return boolean
-     */
-    public function hasParameter($key) : bool
-    {
-        return array_key_exists($key, $this->queryParameters);
-    }
-
-    /**
-     * Get a query parameter
-     * @param  string $key     The name of the parameter
-     * @param  mixed  $default Fallback value, if the parameter doesn't exist
-     * @return string|null
-     */
-    public function getParameter(string $key, $default = null) : ?string
-    {
-        if ($this->hasParameter($key)) {
-            return $this->queryParameters[$key];
-        }
-
-        return $default;
-    }
-
-    /**
-     * Add a query parameter
-     * @param  string $key
-     * @param  mixed  $value
-     * @return self
-     */
-    public function addParameter(string $key, $value) : self
-    {
-        $this->queryParameters[$key] = $value;
+        $this->isSecure = $secure;
 
         return $this;
-    }
-
-    /**
-     * Add/replace one or more query parameters
-     * @param  array $pairs key => value pairs
-     * @return self
-     */
-    public function mergeParameters(array $pairs) : self
-    {
-        $this->queryParameters = array_merge($this->queryParameters, $pairs);
-
-        return $this;
-    }
-
-    /**
-     * Remove a query parameter
-     * @param  string $key
-     * @return self
-     */
-    public function removeParameter(string $key) : self
-    {
-        if ($this->hasParameter($key)) {
-            unset($this->queryParameters[$key]);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Get the fragment of the URL
-     * @return string|null
-     */
-    public function getFragment() : ?string
-    {
-        return $this->fragment;
-    }
-
-    /**
-     * Set the fragment of the URL
-     * @param  string $fragment
-     * @return self
-     */
-    public function setFragment(string $fragment) : self
-    {
-        $this->fragment = urlencode($fragment);
-
-        return $this;
-    }
-
-    /**
-     * Alias of getFragment()
-     * @return string|null
-     */
-    public function getHash() : ?string
-    {
-        return $this->getFragment();
-    }
-
-    /**
-     * Alias of setFragment()
-     * @param  string $hash
-     * @return self
-     */
-    public function setHash(string $hash) : self
-    {
-        return $this->setFragment($hash);
     }
 
     /**
@@ -254,8 +99,8 @@ class UrlEditor
     public function getBase()
     {
         return sprintf(
-            '%s://%s',
-            $this->urlParts['scheme'],
+            'http%s://%s',
+            $this->isSecure() ? 's' : '',
             $this->urlParts['host']
         );
     }
@@ -268,7 +113,7 @@ class UrlEditor
     {
         // Prepare the query array: nulls become empty strings
         $queryParameters = [];
-        foreach ($this->queryParameters as $key => &$value) {
+        foreach ($this->getParameters()->toArray() as $key => &$value) {
             // http_build_query() skips nulls, so make it empty strings
             if ($value === null) {
                 $value = '';
@@ -277,16 +122,19 @@ class UrlEditor
             $queryParameters[$key] = $value;
         }
 
+        // The fragment part of the URL
+        $fragment = $this->getFragment()->toString();
+
         // Return a fully re-constructed URL
         return sprintf(
-            '%s%s%s%s',
-            $this->getBase(),
-            $this->getPath(),
+            '%s/%s%s%s',
+            rtrim($this->getBase(), '/'),
+            $this->getSlugs()->toString(),
             (count($queryParameters) > 0)
                 ? '?' . http_build_query($queryParameters)
                 : '',
-            ($this->getFragment() !== null)
-                ? '#' . $this->getFragment()
+            ($fragment !== '')
+                ? '#' . $fragment
                 : ''
         );
     }
@@ -305,5 +153,38 @@ class UrlEditor
         );
 
         exit;
+    }
+
+    /**
+     * @return Fragment
+     */
+    public function getFragment() : Fragment
+    {
+        return $this->fragment;
+    }
+
+    /**
+     * Alias of getFragment()
+     * @return Fragment
+     */
+    public function getAnchor() : Fragment
+    {
+        return $this->getFragment();
+    }
+
+    /**
+     * @return Parameters
+     */
+    public function getParameters() : Parameters
+    {
+        return $this->parameters;
+    }
+
+    /**
+     * @return Slugs
+     */
+    public function getSlugs() : Slugs
+    {
+        return $this->slugs;
     }
 }

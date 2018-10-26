@@ -1,24 +1,24 @@
 {
-    "name": "nerbiz/url-editor",
-    "description": "Easily edit a URL",
-    "type": "library",
-    "require": {
-        "php": "^7.0"
-    },
-    "license": "Unlicense",
-    "authors": [
-        {
-            "name": "Sybren Dijkstra",
-            "email": "nerbiz@gmail.com",
-            "role": "Developer"
-        }
-    ],
-    "autoload": {
-        "psr-4": {
-            "Nerbiz\\": "src"
-        }
-    },
-    "support" : {
-        "docs": "https://github.com/nerbiz/url-editor"
+  "name": "nerbiz/url-editor",
+  "description": "Easily edit a URL",
+  "type": "library",
+  "require": {
+    "php": "^7.0"
+  },
+  "license": "Unlicense",
+  "authors": [
+    {
+      "name": "Sybren Dijkstra",
+      "email": "nerbiz@gmail.com",
+      "role": "Developer"
     }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Nerbiz\\": "src"
+    }
+  },
+  "support" : {
+    "docs": "https://github.com/nerbiz/url-editor"
+  }
 }
