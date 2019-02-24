@@ -45,18 +45,19 @@ class UrlEditor
 
     /**
      * @param string|null $url The URL to work with, current URL if omitted
+     * @throws Exception
      */
     public function __construct(string $url = null)
     {
         if ($url !== null) {
             $this->setUrl($url);
         } else {
-            $this->url = sprintf(
+            $this->setUrl(sprintf(
                 'http%s://%s%s',
                 (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 's' : '',
                 rtrim($_SERVER['HTTP_HOST'], '/'),
                 '/' . ltrim($_SERVER['REQUEST_URI'], '/')
-            );
+            ));
         }
 
         $this->urlParts = parse_url($this->url);
@@ -70,8 +71,9 @@ class UrlEditor
     /**
      * @param  string $url
      * @return self
+     * @throws Exception
      */
-    public function setUrl(string $url) : self
+    public function setUrl(string $url): self
     {
         if (filter_var($url, FILTER_VALIDATE_URL) === false) {
             throw new \Exception(sprintf(
@@ -89,7 +91,7 @@ class UrlEditor
      * Get the URL parts
      * @return array
      */
-    public function getParts() : array
+    public function getParts(): array
     {
         return $this->urlParts;
     }
@@ -97,15 +99,16 @@ class UrlEditor
     /**
      * @return bool
      */
-    public function isSecure() : bool
+    public function isSecure(): bool
     {
         return $this->isSecure;
     }
 
     /**
-     * @param bool  $secure
+     * @param bool $secure
+     * @return self
      */
-    public function setIsSecure(bool $secure) : self
+    public function setIsSecure(bool $secure): self
     {
         $this->isSecure = $secure;
 
@@ -129,7 +132,7 @@ class UrlEditor
      * Get the full URL
      * @return string
      */
-    public function getFull() : string
+    public function getFull(): string
     {
         // Prepare the query array: nulls become empty strings
         $queryParameters = [];
@@ -161,7 +164,7 @@ class UrlEditor
 
     /**
      * Redirect to the full URL
-     * @param  int  $statusCode The HTTP status code of the redirect (default = 303)
+     * @param  int $statusCode The HTTP status code of the redirect (default = 303)
      * @return void
      */
     public function redirect($statusCode = 303)
@@ -178,7 +181,7 @@ class UrlEditor
     /**
      * @return Fragment
      */
-    public function getFragment() : Fragment
+    public function getFragment(): Fragment
     {
         return $this->fragment;
     }
@@ -187,7 +190,7 @@ class UrlEditor
      * Alias of getFragment()
      * @return Fragment
      */
-    public function getAnchor() : Fragment
+    public function getAnchor(): Fragment
     {
         return $this->getFragment();
     }
@@ -195,7 +198,7 @@ class UrlEditor
     /**
      * @return Parameters
      */
-    public function getParameters() : Parameters
+    public function getParameters(): Parameters
     {
         return $this->parameters;
     }
@@ -203,7 +206,7 @@ class UrlEditor
     /**
      * @return Slugs
      */
-    public function getSlugs() : Slugs
+    public function getSlugs(): Slugs
     {
         return $this->slugs;
     }

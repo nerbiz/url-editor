@@ -21,7 +21,7 @@ class Fragment
      * @param  string $fragment
      * @return self
      */
-    public function set(string $fragment) : self
+    public function set(string $fragment): self
     {
         $this->fragment = trim(str_replace('#', '', $fragment));
 
@@ -31,7 +31,7 @@ class Fragment
     /**
      * @return string
      */
-    public function get() : string
+    public function get(): string
     {
         return $this->fragment;
     }
@@ -39,7 +39,7 @@ class Fragment
     /**
      * @return string
      */
-    public function toString() : string
+    public function toString(): string
     {
         return $this->fragment;
     }
@@ -47,7 +47,7 @@ class Fragment
     /**
      * @return string
      */
-    public function __toString() : string
+    public function __toString(): string
     {
         return $this->toString();
     }

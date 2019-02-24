@@ -36,8 +36,13 @@ class Parameters
      * @param  string $parameters
      * @return self
      */
-    public function fromString(string $parameters) : self
+    public function fromString(string $parameters): self
     {
+        // Remove a leading question mark
+        if (substr($parameters, 0, 1) === '?') {
+            $parameters = substr($parameters, 1);
+        }
+
         $this->parameters = [];
         $parts = array_filter(explode('&', $parameters));
 
@@ -68,7 +73,7 @@ class Parameters
      * @param  array $parameters
      * @return self
      */
-    public function fromArray(array $parameters) : self
+    public function fromArray(array $parameters): self
     {
         $this->parameters = $parameters;
 
@@ -80,7 +85,7 @@ class Parameters
      * @param  string $key
      * @return bool
      */
-    public function has(string $key) : bool
+    public function has(string $key): bool
     {
         return array_key_exists($key, $this->parameters);
     }
@@ -88,7 +93,7 @@ class Parameters
     /**
      * Add a parameter
      * @param  string $key
-     * @param  mixed $value
+     * @param  mixed  $value
      * @return self
      */
     public function add(string $key, $value)
@@ -103,7 +108,7 @@ class Parameters
      * @param  array $parameters key => value pairs
      * @return self
      */
-    public function mergeWith(array $parameters) : self
+    public function mergeWith(array $parameters): self
     {
         $this->parameters = array_merge($this->parameters, $parameters);
 
@@ -115,7 +120,7 @@ class Parameters
      * @param  string $key
      * @return self
      */
-    public function remove(string $key) : self
+    public function remove(string $key): self
     {
         if ($this->has($key)) {
             unset($this->parameters[$key]);
@@ -129,7 +134,7 @@ class Parameters
      * @param  int $index
      * @return self
      */
-    public function removeAt(int $index) : self
+    public function removeAt(int $index): self
     {
         $counter = -1;
         foreach ($this->parameters as $key => $value) {
@@ -144,8 +149,8 @@ class Parameters
 
     /**
      * Get 1 or all parameters
-     * @param  string|null  $key     The name of the parameter
-     * @param  mixed        $default Fallback value, if the parameter doesn't exist
+     * @param  string|null $key     The name of the parameter
+     * @param  mixed       $default Fallback value, if the parameter doesn't exist
      * @return string|mixed
      */
     public function get(string $key = null, $default = null)
@@ -164,7 +169,7 @@ class Parameters
     /**
      * @return array
      */
-    public function toArray() : array
+    public function toArray(): array
     {
         return $this->get();
     }
@@ -172,7 +177,7 @@ class Parameters
     /**
      * @return string
      */
-    public function toString() : string
+    public function toString(): string
     {
         $parameters = [];
         foreach ($this->parameters as $key => $value) {
@@ -185,7 +190,7 @@ class Parameters
     /**
      * @return string
      */
-    public function __toString() : string
+    public function __toString(): string
     {
         return $this->toString();
     }

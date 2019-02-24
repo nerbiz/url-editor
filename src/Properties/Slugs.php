@@ -36,7 +36,7 @@ class Slugs
      * @param  string $slugs
      * @return self
      */
-    public function fromString(string $slugs) : self
+    public function fromString(string $slugs): self
     {
         $this->slugs = explode('/', trim($slugs, '/'));
 
@@ -47,7 +47,7 @@ class Slugs
      * @param  array $slugs
      * @return self
      */
-    public function fromArray(array $slugs) : self
+    public function fromArray(array $slugs): self
     {
         $this->slugs = $slugs;
 
@@ -59,7 +59,7 @@ class Slugs
      * @param  string $slug
      * @return bool
      */
-    public function has(string $slug) : bool
+    public function has(string $slug): bool
     {
         return in_array($slug, $this->slugs, true);
     }
@@ -69,7 +69,7 @@ class Slugs
      * @param  string $slug
      * @return self
      */
-    public function add(string $slug) : self
+    public function add(string $slug): self
     {
         $this->slugs[] = $slug;
 
@@ -82,7 +82,7 @@ class Slugs
      * @param  string $slug
      * @return self
      */
-    public function addAt(int $index, string $slug) : self
+    public function addAt(int $index, string $slug): self
     {
         array_splice($this->slugs, $index, 0, $slug);
 
@@ -94,7 +94,7 @@ class Slugs
      * @param  array $slugs
      * @return self
      */
-    public function mergeWith(array $slugs) : self
+    public function mergeWith(array $slugs): self
     {
         $this->slugs = array_merge($this->slugs, $slugs);
 
@@ -107,13 +107,13 @@ class Slugs
      * @param  bool   $all
      * @return self
      */
-    public function remove(string $slug, bool $all = false) : self
+    public function remove(string $slug, bool $all = false): self
     {
         while (($key = array_search($slug, $this->slugs)) !== false) {
             unset($this->slugs[$key]);
 
             // Keep looping, if all occurences need to be removed
-            if (! $all) {
+            if (!$all) {
                 break;
             }
         }
@@ -126,7 +126,7 @@ class Slugs
      * @param  int $index
      * @return self
      */
-    public function removeAt(int $index) : self
+    public function removeAt(int $index): self
     {
         if (array_key_exists($index, $this->slugs)) {
             unset($this->slugs[$index]);
@@ -138,7 +138,7 @@ class Slugs
     /**
      * @return array
      */
-    public function get() : array
+    public function get(): array
     {
         return $this->slugs;
     }
@@ -146,7 +146,7 @@ class Slugs
     /**
      * @return array
      */
-    public function toArray() : array
+    public function toArray(): array
     {
         return $this->get();
     }
@@ -154,7 +154,7 @@ class Slugs
     /**
      * @return string
      */
-    public function toString() : string
+    public function toString(): string
     {
         return implode('/', $this->slugs);
     }
@@ -162,7 +162,7 @@ class Slugs
     /**
      * @return string
      */
-    public function __toString() : string
+    public function __toString(): string
     {
         return $this->toString();
     }
