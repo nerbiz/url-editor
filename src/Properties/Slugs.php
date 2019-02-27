@@ -2,9 +2,11 @@
 
 namespace Nerbiz\UrlEditor\Properties;
 
-use InvalidArgumentException;
+use Nerbiz\UrlEditor\Contracts\Arrayable;
+use Nerbiz\UrlEditor\Contracts\Jsonable;
+use Nerbiz\UrlEditor\Contracts\Stringable;
 
-class Slugs
+class Slugs implements Stringable, Arrayable, Jsonable
 {
     /**
      * The slugs of a URL
@@ -13,7 +15,8 @@ class Slugs
     protected $slugs = [];
 
     /**
-     * @param string|array $slugs A string or array of slugs
+     * @param string|array|null $slugs A string or array of slugs
+     * @throws \InvalidArgumentException
      */
     public function __construct($slugs = null)
     {
@@ -23,7 +26,7 @@ class Slugs
             } elseif (is_array($slugs)) {
                 $this->fromArray($slugs);
             } else {
-                throw new InvalidArgumentException(sprintf(
+                throw new \InvalidArgumentException(sprintf(
                     "%s() expects parameter 'slugs' to be string or array, '%s' given",
                     __METHOD__,
                     is_object($slugs) ? get_class($slugs) : gettype($slugs)
@@ -33,30 +36,8 @@ class Slugs
     }
 
     /**
-     * @param  string $slugs
-     * @return self
-     */
-    public function fromString(string $slugs): self
-    {
-        $this->slugs = explode('/', trim($slugs, '/'));
-
-        return $this;
-    }
-
-    /**
-     * @param  array $slugs
-     * @return self
-     */
-    public function fromArray(array $slugs): self
-    {
-        $this->slugs = $slugs;
-
-        return $this;
-    }
-
-    /**
      * See whether a slug exists
-     * @param  string $slug
+     * @param string $slug
      * @return bool
      */
     public function has(string $slug): bool
@@ -66,7 +47,7 @@ class Slugs
 
     /**
      * Add a slug
-     * @param  string $slug
+     * @param string $slug
      * @return self
      */
     public function add(string $slug): self
@@ -78,8 +59,8 @@ class Slugs
 
     /**
      * Add a slug at an array index
-     * @param  int    $index
-     * @param  string $slug
+     * @param int    $index
+     * @param string $slug
      * @return self
      */
     public function addAt(int $index, string $slug): self
@@ -91,7 +72,7 @@ class Slugs
 
     /**
      * Merge slugs with existing ones
-     * @param  array $slugs
+     * @param array $slugs
      * @return self
      */
     public function mergeWith(array $slugs): self
@@ -103,8 +84,8 @@ class Slugs
 
     /**
      * Remove a slug, either the first occurence, or all occurences
-     * @param  string $slug
-     * @param  bool   $all
+     * @param string $slug
+     * @param bool   $all
      * @return self
      */
     public function remove(string $slug, bool $all = false): self
@@ -123,7 +104,7 @@ class Slugs
 
     /**
      * Remove a slug at an array index
-     * @param  int $index
+     * @param int $index
      * @return self
      */
     public function removeAt(int $index): self
@@ -136,34 +117,54 @@ class Slugs
     }
 
     /**
-     * @return array
+     * {@inheritdoc}
      */
-    public function get(): array
+    public function fromString(string $slugs): self
+    {
+        $this->slugs = array_filter(explode('/', $slugs));
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toString(): string
+    {
+        return implode('/', $this->toArray());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function __toString(): string
+    {
+        return $this->toString();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function fromArray(array $slugs): self
+    {
+        $this->slugs = $slugs;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toArray(): array
     {
         return $this->slugs;
     }
 
     /**
-     * @return array
+     * {@inheritdoc}
      */
-    public function toArray(): array
+    public function toJson(): string
     {
-        return $this->get();
-    }
-
-    /**
-     * @return string
-     */
-    public function toString(): string
-    {
-        return implode('/', $this->slugs);
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString(): string
-    {
-        return $this->toString();
+        return json_encode($this->toArray());
     }
 }

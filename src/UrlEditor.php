@@ -44,11 +44,12 @@ class UrlEditor
     protected $isSecure;
 
     /**
-     * @param string|null $url The URL to work with, current URL if omitted
+     * @param string|null $url The URL to work with, or current URL if null
      * @throws Exception
      */
-    public function __construct(string $url = null)
+    public function __construct(?string $url = null)
     {
+        // Set a given URL, or use the current
         if ($url !== null) {
             $this->setUrl($url);
         } else {
@@ -69,16 +70,17 @@ class UrlEditor
     }
 
     /**
-     * @param  string $url
+     * @param string $url
      * @return self
-     * @throws Exception
+     * @throws \InvalidArgumentException
      */
     public function setUrl(string $url): self
     {
         if (filter_var($url, FILTER_VALIDATE_URL) === false) {
-            throw new \Exception(sprintf(
-                "%s(): invalid URL provided",
-                __METHOD__
+            throw new \InvalidArgumentException(sprintf(
+                "%s(): invalid URL provided: %s",
+                __METHOD__,
+                is_object($url) ? get_class($url) : $url
             ));
         }
 
@@ -119,7 +121,7 @@ class UrlEditor
      * Get the base URL
      * @return string
      */
-    public function getBase()
+    public function getBase(): string
     {
         return sprintf(
             'http%s://%s',
@@ -134,18 +136,7 @@ class UrlEditor
      */
     public function getFull(): string
     {
-        // Prepare the query array: nulls become empty strings
-        $queryParameters = [];
-        foreach ($this->getParameters()->toArray() as $key => &$value) {
-            // http_build_query() skips nulls, so make it empty strings
-            if ($value === null) {
-                $value = '';
-            }
-
-            $queryParameters[$key] = $value;
-        }
-
-        // The fragment part of the URL
+        $parameters = $this->getParameters()->toString();
         $fragment = $this->getFragment()->toString();
 
         // Return a fully re-constructed URL
@@ -153,8 +144,8 @@ class UrlEditor
             '%s/%s%s%s',
             rtrim($this->getBase(), '/'),
             $this->getSlugs()->toString(),
-            (count($queryParameters) > 0)
-                ? '?' . http_build_query($queryParameters)
+            ($parameters !== '')
+                ? '?' . $parameters
                 : '',
             ($fragment !== '')
                 ? '#' . $fragment
@@ -164,10 +155,10 @@ class UrlEditor
 
     /**
      * Redirect to the full URL
-     * @param  int $statusCode The HTTP status code of the redirect (default = 303)
+     * @param int $statusCode The HTTP status code of the redirect (default = 303)
      * @return void
      */
-    public function redirect($statusCode = 303)
+    public function redirect(int $statusCode = 302): void
     {
         header(
             sprintf('Location: %s', $this->getFull()),

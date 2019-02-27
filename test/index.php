@@ -144,7 +144,7 @@ $urlEditor->getParameters()
 
 <h3>Change the fragment (anchor)</h3>
 <?php
-$urlEditor->getFragment()->set('other-element-id');
+$urlEditor->getFragment()->fromString('other-element-id');
 ?>
 <pre><?php echo htmlentities(var_export(
     $urlEditor->getFull()
