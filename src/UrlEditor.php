@@ -44,6 +44,12 @@ class UrlEditor
     protected $isSecure;
 
     /**
+     * The host part of the URL
+     * @var string
+     */
+    protected $host;
+
+    /**
      * @param string|null $url The URL to work with, or current URL if null
      * @throws \InvalidArgumentException
      */
@@ -63,6 +69,7 @@ class UrlEditor
 
         $this->urlParts = parse_url($this->url);
         $this->setIsSecure(mb_substr($this->urlParts['scheme'], 0, 5) === 'https');
+        $this->setHost($this->urlParts['host']);
 
         $this->parameters = new Parameters($this->urlParts['query'] ?? null);
         $this->slugs = new Slugs($this->urlParts['path'] ?? null);
@@ -118,6 +125,26 @@ class UrlEditor
     }
 
     /**
+     * @return string
+     */
+    public function getHost(): string
+    {
+        return $this->host;
+    }
+
+    /**
+     * @param string $host
+     * @return self
+     */
+    public function setHost(string $host): self
+    {
+        $this->host = preg_replace('~^https?://~', '', trim($host));
+        $this->host = rtrim($this->host, '/');
+
+        return $this;
+    }
+
+    /**
      * Get the base URL
      * @return string
      */
@@ -126,7 +153,7 @@ class UrlEditor
         return sprintf(
             'http%s://%s',
             $this->isSecure() ? 's' : '',
-            $this->urlParts['host']
+            $this->getHost()
         );
     }
 
