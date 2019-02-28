@@ -8,7 +8,7 @@ class Fragment implements Stringable
 {
     /**
      * The fragment (hash) of a URL
-     * @var string|null
+     * @var string
      */
     protected $fragment = '';
 

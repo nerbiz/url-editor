@@ -45,7 +45,7 @@ class UrlEditor
 
     /**
      * @param string|null $url The URL to work with, or current URL if null
-     * @throws Exception
+     * @throws \InvalidArgumentException
      */
     public function __construct(?string $url = null)
     {
@@ -78,7 +78,7 @@ class UrlEditor
     {
         if (filter_var($url, FILTER_VALIDATE_URL) === false) {
             throw new \InvalidArgumentException(sprintf(
-                "%s(): invalid URL provided: %s",
+                "%s(): invalid URL provided: '%s'",
                 __METHOD__,
                 is_object($url) ? get_class($url) : $url
             ));

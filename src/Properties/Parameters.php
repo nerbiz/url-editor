@@ -138,7 +138,7 @@ class Parameters implements Stringable, Arrayable, Jsonable
                 } else {
                     // Get the parameter name and value (decoded)
                     list($key, $value) = explode('=', $part);
-                    $value = urldecode($value);
+                    $value = trim(urldecode($value));
 
                     // An empty string means null
                     if ($value === '') {
