@@ -155,7 +155,7 @@ class UrlEditor
 
     /**
      * Redirect to the full URL
-     * @param int $statusCode The HTTP status code of the redirect (default = 303)
+     * @param int $statusCode The HTTP status code of the redirect
      * @return void
      */
     public function redirect(int $statusCode = 302): void

@@ -1,17 +1,15 @@
 # UrlEditor
 
-## Easily edit a URL
-
 Simplifying adding/removing slugs, or changing GET parameters. A redirect method is added for convenience.
 
-### Installation
+## Installation
 
 Include this project with [Composer](https://getcomposer.org/):  
 ```composer require nerbiz/url-editor```
 
-### Usage
+## Usage
 
-There is no proper readme yet, but examples are available in the 'test' directory. I added that file for some personal testing, and it doubles as a 'tutorial' until I find some time to make a readme or wiki.
+Take a look at the [Wiki page](https://github.com/nerbiz/url-editor/wiki) for usage information.
 
 ## Contributing
 
