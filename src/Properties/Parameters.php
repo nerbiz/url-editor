@@ -5,6 +5,7 @@ namespace Nerbiz\UrlEditor\Properties;
 use Nerbiz\UrlEditor\Contracts\Arrayable;
 use Nerbiz\UrlEditor\Contracts\Jsonable;
 use Nerbiz\UrlEditor\Contracts\Stringable;
+use Nerbiz\UrlEditor\Exceptions\InvalidJsonException;
 use Nerbiz\UrlEditor\Exceptions\InvalidParametersException;
 
 class Parameters implements Stringable, Arrayable, Jsonable
@@ -196,6 +197,24 @@ class Parameters implements Stringable, Arrayable, Jsonable
     public function toArray(): array
     {
         return $this->parameters;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function fromJson(string $json): self
+    {
+        $decoded = json_decode($json, true);
+        if ($decoded === null) {
+            throw new InvalidJsonException(sprintf(
+                "%s() expects valid JSON, error: '%s', '%s' given",
+                __METHOD__,
+                json_last_error_msg(),
+                $json
+            ));
+        }
+        
+        return $this->fromArray($decoded);
     }
 
     /**

@@ -5,6 +5,7 @@ namespace Nerbiz\UrlEditor\Properties;
 use Nerbiz\UrlEditor\Contracts\Arrayable;
 use Nerbiz\UrlEditor\Contracts\Jsonable;
 use Nerbiz\UrlEditor\Contracts\Stringable;
+use Nerbiz\UrlEditor\Exceptions\InvalidJsonException;
 
 class Subdomains implements Stringable, Arrayable, Jsonable
 {
@@ -92,7 +93,7 @@ class Subdomains implements Stringable, Arrayable, Jsonable
             return $this->remove();
         }
 
-        $this->subdomains = implode('.', $subdomains);
+        $this->subdomains = implode('.', array_values($subdomains));
 
         return $this;
     }
@@ -103,6 +104,24 @@ class Subdomains implements Stringable, Arrayable, Jsonable
     public function toArray(): array
     {
         return array_filter(explode('.', $this->subdomains));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function fromJson(string $json): self
+    {
+        $decoded = json_decode($json, true);
+        if ($decoded === null) {
+            throw new InvalidJsonException(sprintf(
+                "%s() expects valid JSON, error: '%s', '%s' given",
+                __METHOD__,
+                json_last_error_msg(),
+                $json
+            ));
+        }
+
+        return $this->fromArray($decoded);
     }
 
     /**

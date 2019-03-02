@@ -5,6 +5,7 @@ namespace Nerbiz\UrlEditor\Properties;
 use Nerbiz\UrlEditor\Contracts\Arrayable;
 use Nerbiz\UrlEditor\Contracts\Jsonable;
 use Nerbiz\UrlEditor\Contracts\Stringable;
+use Nerbiz\UrlEditor\Exceptions\InvalidJsonException;
 use Nerbiz\UrlEditor\Exceptions\InvalidTldException;
 
 class Tld implements Stringable, Arrayable, Jsonable
@@ -131,7 +132,7 @@ class Tld implements Stringable, Arrayable, Jsonable
      */
     public function fromArray(array $tld): self
     {
-        return $this->fromString(implode('.', $tld));
+        return $this->fromString(implode('.', array_values($tld)));
     }
 
     /**
@@ -140,6 +141,24 @@ class Tld implements Stringable, Arrayable, Jsonable
     public function toArray(): array
     {
         return explode('.', trim($this->tld, '.'));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function fromJson(string $json): self
+    {
+        $decoded = json_decode($json, true);
+        if ($decoded === null) {
+            throw new InvalidJsonException(sprintf(
+                "%s() expects valid JSON, error: '%s', '%s' given",
+                __METHOD__,
+                json_last_error_msg(),
+                $json
+            ));
+        }
+
+        return $this->fromArray($decoded);
     }
 
     /**
