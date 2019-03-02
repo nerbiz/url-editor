@@ -29,11 +29,6 @@ $urlEditor = new Nerbiz\UrlEditor\UrlEditor($url);
 <p>Initial URL:</p>
 <pre><?php echo htmlentities($url); ?></pre>
 
-<h3>URL base</h3>
-<pre><?php echo htmlentities(var_export(
-    $urlEditor->getBase()
-, true)); ?></pre>
-
 <h3>URL parts (using parse_url())</h3>
 <pre><?php echo htmlentities(var_export(
     $urlEditor->getParts()

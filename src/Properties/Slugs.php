@@ -122,7 +122,7 @@ class Slugs implements Stringable, Arrayable, Jsonable
      */
     public function fromString(string $slugs): self
     {
-        $this->slugs = array_values(array_filter(explode('/', $slugs)));
+        $this->slugs = array_values(array_filter(explode('/', trim($slugs))));
 
         return $this;
     }

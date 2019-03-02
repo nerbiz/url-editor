@@ -4,17 +4,21 @@ namespace Nerbiz\UrlEditor;
 
 use Nerbiz\UrlEditor\Exceptions\InvalidUrlException;
 use Nerbiz\UrlEditor\Properties\Fragment;
+use Nerbiz\UrlEditor\Properties\Host;
 use Nerbiz\UrlEditor\Properties\Parameters;
 use Nerbiz\UrlEditor\Properties\Slugs;
-
-use Exception;
 
 class UrlEditor
 {
     /**
-     * @var Fragment
+     * @var Host
      */
-    protected $fragment;
+    protected $host;
+
+    /**
+     * @var Slugs
+     */
+    protected $slugs;
 
     /**
      * @var Parameters
@@ -22,9 +26,9 @@ class UrlEditor
     protected $parameters;
 
     /**
-     * @var Slugs
+     * @var Fragment
      */
-    protected $slugs;
+    protected $fragment;
 
     /**
      * The URL to work with
@@ -43,12 +47,6 @@ class UrlEditor
      * @var bool
      */
     protected $isSecure;
-
-    /**
-     * The host part of the URL
-     * @var string
-     */
-    protected $host;
 
     /**
      * @param string|null $url The URL to work with, or current URL if null
@@ -70,10 +68,10 @@ class UrlEditor
 
         $this->urlParts = parse_url($this->url);
         $this->setIsSecure(mb_substr($this->urlParts['scheme'], 0, 5) === 'https');
-        $this->setHost($this->urlParts['host']);
 
-        $this->parameters = new Parameters($this->urlParts['query'] ?? null);
+        $this->host = new Host($this->urlParts['host']);
         $this->slugs = new Slugs($this->urlParts['path'] ?? null);
+        $this->parameters = new Parameters($this->urlParts['query'] ?? null);
         $this->fragment = new Fragment($this->urlParts['fragment'] ?? null);
     }
 
@@ -84,17 +82,29 @@ class UrlEditor
      */
     public function setUrl(string $url): self
     {
+        $this->checkUrl($url);
+        $this->url = $url;
+
+        return $this;
+    }
+
+    /**
+     * Check the validity of a URL
+     * @param string $url
+     * @return bool
+     * @throws InvalidUrlException
+     */
+    public function checkUrl(string $url): bool
+    {
         if (filter_var($url, FILTER_VALIDATE_URL) === false) {
             throw new InvalidUrlException(sprintf(
-                "%s(): invalid URL provided: '%s'",
+                "%s(): invalid URL: '%s'",
                 __METHOD__,
                 is_object($url) ? get_class($url) : $url
             ));
         }
 
-        $this->url = $url;
-
-        return $this;
+        return true;
     }
 
     /**
@@ -126,52 +136,23 @@ class UrlEditor
     }
 
     /**
-     * @return string
-     */
-    public function getHost(): string
-    {
-        return $this->host;
-    }
-
-    /**
-     * @param string $host
-     * @return self
-     */
-    public function setHost(string $host): self
-    {
-        $this->host = preg_replace('~^https?://~', '', trim($host));
-        $this->host = rtrim($this->host, '/');
-
-        return $this;
-    }
-
-    /**
-     * Get the base URL
-     * @return string
-     */
-    public function getBase(): string
-    {
-        return sprintf(
-            'http%s://%s',
-            $this->isSecure() ? 's' : '',
-            $this->getHost()
-        );
-    }
-
-    /**
      * Get the full URL
      * @return string
      */
     public function getFull(): string
     {
+        $slugs = $this->getSlugs()->toString();
         $parameters = $this->getParameters()->toString();
         $fragment = $this->getFragment()->toString();
 
-        // Return a fully re-constructed URL
-        return sprintf(
-            '%s/%s%s%s',
-            rtrim($this->getBase(), '/'),
-            $this->getSlugs()->toString(),
+        // Construct the full URL
+        $fullUrl = sprintf(
+            'http%s://%s%s%s%s',
+            $this->isSecure() ? 's' : '',
+            $this->getHost()->toString(),
+            ($slugs !== '')
+                ? '/' . $slugs
+                : '',
             ($parameters !== '')
                 ? '?' . $parameters
                 : '',
@@ -179,6 +160,10 @@ class UrlEditor
                 ? '#' . $fragment
                 : ''
         );
+
+        // See if the URL is valid
+        $this->checkUrl($fullUrl);
+        return $fullUrl;
     }
 
     /**
@@ -198,6 +183,30 @@ class UrlEditor
     }
 
     /**
+     * @return Host
+     */
+    public function getHost(): Host
+    {
+        return $this->host;
+    }
+
+    /**
+     * @return Slugs
+     */
+    public function getSlugs(): Slugs
+    {
+        return $this->slugs;
+    }
+
+    /**
+     * @return Parameters
+     */
+    public function getParameters(): Parameters
+    {
+        return $this->parameters;
+    }
+
+    /**
      * @return Fragment
      */
     public function getFragment(): Fragment
@@ -212,21 +221,5 @@ class UrlEditor
     public function getAnchor(): Fragment
     {
         return $this->getFragment();
-    }
-
-    /**
-     * @return Parameters
-     */
-    public function getParameters(): Parameters
-    {
-        return $this->parameters;
-    }
-
-    /**
-     * @return Slugs
-     */
-    public function getSlugs(): Slugs
-    {
-        return $this->slugs;
     }
 }
