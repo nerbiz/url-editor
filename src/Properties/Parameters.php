@@ -5,6 +5,7 @@ namespace Nerbiz\UrlEditor\Properties;
 use Nerbiz\UrlEditor\Contracts\Arrayable;
 use Nerbiz\UrlEditor\Contracts\Jsonable;
 use Nerbiz\UrlEditor\Contracts\Stringable;
+use Nerbiz\UrlEditor\Exceptions\InvalidParametersException;
 
 class Parameters implements Stringable, Arrayable, Jsonable
 {
@@ -16,7 +17,7 @@ class Parameters implements Stringable, Arrayable, Jsonable
 
     /**
      * @param string|array|null $parameters A string or array of parameters
-     * @throws \InvalidArgumentException
+     * @throws InvalidParametersException
      */
     public function __construct($parameters = null)
     {
@@ -26,7 +27,7 @@ class Parameters implements Stringable, Arrayable, Jsonable
             } elseif (is_array($parameters)) {
                 $this->fromArray($parameters);
             } else {
-                throw new \InvalidArgumentException(sprintf(
+                throw new InvalidParametersException(sprintf(
                     "%s() expects parameter 'parameters' to be string or array, '%s' given",
                     __METHOD__,
                     is_object($parameters) ? get_class($parameters) : gettype($parameters)

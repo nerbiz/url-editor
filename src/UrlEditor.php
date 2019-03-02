@@ -2,6 +2,7 @@
 
 namespace Nerbiz\UrlEditor;
 
+use Nerbiz\UrlEditor\Exceptions\InvalidUrlException;
 use Nerbiz\UrlEditor\Properties\Fragment;
 use Nerbiz\UrlEditor\Properties\Parameters;
 use Nerbiz\UrlEditor\Properties\Slugs;
@@ -51,7 +52,7 @@ class UrlEditor
 
     /**
      * @param string|null $url The URL to work with, or current URL if null
-     * @throws \InvalidArgumentException
+     * @throws InvalidUrlException
      */
     public function __construct(?string $url = null)
     {
@@ -79,12 +80,12 @@ class UrlEditor
     /**
      * @param string $url
      * @return self
-     * @throws \InvalidArgumentException
+     * @throws InvalidUrlException
      */
     public function setUrl(string $url): self
     {
         if (filter_var($url, FILTER_VALIDATE_URL) === false) {
-            throw new \InvalidArgumentException(sprintf(
+            throw new InvalidUrlException(sprintf(
                 "%s(): invalid URL provided: '%s'",
                 __METHOD__,
                 is_object($url) ? get_class($url) : $url

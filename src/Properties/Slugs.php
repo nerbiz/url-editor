@@ -5,6 +5,7 @@ namespace Nerbiz\UrlEditor\Properties;
 use Nerbiz\UrlEditor\Contracts\Arrayable;
 use Nerbiz\UrlEditor\Contracts\Jsonable;
 use Nerbiz\UrlEditor\Contracts\Stringable;
+use Nerbiz\UrlEditor\Exceptions\InvalidSlugsException;
 
 class Slugs implements Stringable, Arrayable, Jsonable
 {
@@ -16,7 +17,7 @@ class Slugs implements Stringable, Arrayable, Jsonable
 
     /**
      * @param string|array|null $slugs A string or array of slugs
-     * @throws \InvalidArgumentException
+     * @throws InvalidSlugsException
      */
     public function __construct($slugs = null)
     {
@@ -26,7 +27,7 @@ class Slugs implements Stringable, Arrayable, Jsonable
             } elseif (is_array($slugs)) {
                 $this->fromArray($slugs);
             } else {
-                throw new \InvalidArgumentException(sprintf(
+                throw new InvalidSlugsException(sprintf(
                     "%s() expects parameter 'slugs' to be string or array, '%s' given",
                     __METHOD__,
                     is_object($slugs) ? get_class($slugs) : gettype($slugs)
