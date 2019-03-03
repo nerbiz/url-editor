@@ -58,6 +58,7 @@ class Tld implements Stringable, Arrayable, Jsonable
     public function fromHost(Host $host): self
     {
         $tlds = [];
+        // Reverse the parts, so the TLD(s) are the first items
         $hostParts = array_reverse(explode('.', $host->getOriginal()));
 
         foreach ($hostParts as $hostPart) {
@@ -70,7 +71,7 @@ class Tld implements Stringable, Arrayable, Jsonable
             }
         }
 
-        // Set the TLD by imploding the TLDs
+        // Reverse the array again, to get the original order
         $this->fromArray(array_reverse($tlds));
 
         return $this;
