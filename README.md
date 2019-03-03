@@ -1,6 +1,6 @@
 # UrlEditor
 
-Simplifying adding/removing slugs, or changing GET parameters. A redirect method is added for convenience.
+Simplifies editing URLs.
 
 ## Installation
 
