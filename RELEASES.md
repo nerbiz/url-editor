@@ -1,5 +1,16 @@
 # Release notes
 
+## 1.1.0
+
+* Added the Host, Subdomains and Tld classes.
+* Added the Stringable, Arrayable and Jsonable interfaces.
+* Added the HasArray and HasAssociativeArray traits.
+* Added custom exceptions.
+* Added some unit tests.
+* Updated the readme file.
+* Removed the test file, in favor of the new Wiki pages.
+* PSR-2 compliance and other small fixes.
+
 ## 1.0.1
 
 * Fixed: autoload section in composer.json.
