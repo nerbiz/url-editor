@@ -2,18 +2,20 @@
 
 namespace Nerbiz\UrlEditor\Properties;
 
-use InvalidArgumentException;
+use Nerbiz\UrlEditor\Contracts\Arrayable;
+use Nerbiz\UrlEditor\Contracts\Jsonable;
+use Nerbiz\UrlEditor\Contracts\Stringable;
+use Nerbiz\UrlEditor\Exceptions\InvalidJsonException;
+use Nerbiz\UrlEditor\Exceptions\InvalidParametersException;
+use Nerbiz\UrlEditor\Traits\HasAssociativeArray;
 
-class Parameters
+class Parameters implements Stringable, Arrayable, Jsonable
 {
-    /**
-     * The parameters of a URL
-     * @var array
-     */
-    protected $parameters = [];
+    use HasAssociativeArray;
 
     /**
-     * @param string|array $parameters A string or array of parameters
+     * @param string|array|null $parameters A string or array of parameters
+     * @throws InvalidParametersException
      */
     public function __construct($parameters = null)
     {
@@ -23,8 +25,8 @@ class Parameters
             } elseif (is_array($parameters)) {
                 $this->fromArray($parameters);
             } else {
-                throw new InvalidArgumentException(sprintf(
-                    "%s() expects parameter 'parameters' to be string or array, '%s' given",
+                throw new InvalidParametersException(sprintf(
+                    "%s() expects a string or array, '%s' given",
                     __METHOD__,
                     is_object($parameters) ? get_class($parameters) : gettype($parameters)
                 ));
@@ -33,160 +35,110 @@ class Parameters
     }
 
     /**
-     * @param  string $parameters
-     * @return self
+     * {@inheritdoc}
      */
-    public function fromString(string $parameters) : self
+    public function fromString(string $parameters): self
     {
-        $this->parameters = [];
+        // Remove a leading question mark
+        if (substr($parameters, 0, 1) === '?') {
+            $parameters = substr($parameters, 1);
+        }
+
+        $items = [];
         $parts = array_filter(explode('&', $parameters));
 
         if (count($parts) > 0) {
             foreach ($parts as $part) {
                 // If there is no equals sign, the value is null
                 if (mb_strpos($part, '=') === false) {
-                    $this->parameters[$part] = null;
+                    $items[$part] = null;
                 } else {
                     // Get the parameter name and value (decoded)
                     list($key, $value) = explode('=', $part);
-                    $value = urldecode($value);
+                    $value = trim(urldecode($value));
 
                     // An empty string means null
                     if ($value === '') {
                         $value = null;
                     }
 
-                    $this->parameters[$key] = $value;
+                    $items[$key] = $value;
                 }
             }
         }
 
-        return $this;
-    }
-
-    /**
-     * @param  array $parameters
-     * @return self
-     */
-    public function fromArray(array $parameters) : self
-    {
-        $this->parameters = $parameters;
+        $this->items = $items;
 
         return $this;
     }
 
     /**
-     * See whether a parameter exists (value can be null)
-     * @param  string $key
-     * @return bool
+     * {@inheritdoc}
      */
-    public function has(string $key) : bool
-    {
-        return array_key_exists($key, $this->parameters);
-    }
-
-    /**
-     * Add a parameter
-     * @param  string $key
-     * @param  mixed $value
-     * @return self
-     */
-    public function add(string $key, $value)
-    {
-        $this->parameters[$key] = $value;
-
-        return $this;
-    }
-
-    /**
-     * Merge parameters with existing ones
-     * @param  array $parameters key => value pairs
-     * @return self
-     */
-    public function mergeWith(array $parameters) : self
-    {
-        $this->parameters = array_merge($this->parameters, $parameters);
-
-        return $this;
-    }
-
-    /**
-     * Remove a parameter
-     * @param  string $key
-     * @return self
-     */
-    public function remove(string $key) : self
-    {
-        if ($this->has($key)) {
-            unset($this->parameters[$key]);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Remove a parameter by index
-     * @param  int $index
-     * @return self
-     */
-    public function removeAt(int $index) : self
-    {
-        $counter = -1;
-        foreach ($this->parameters as $key => $value) {
-            if (++$counter === $index) {
-                unset($this->parameters[$key]);
-                break;
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * Get 1 or all parameters
-     * @param  string|null  $key     The name of the parameter
-     * @param  mixed        $default Fallback value, if the parameter doesn't exist
-     * @return string|mixed
-     */
-    public function get(string $key = null, $default = null)
-    {
-        if ($key === null) {
-            return $this->parameters;
-        }
-
-        if ($this->has($key)) {
-            return $this->parameters[$key];
-        }
-
-        return $default;
-    }
-
-    /**
-     * @return array
-     */
-    public function toArray() : array
-    {
-        return $this->get();
-    }
-
-    /**
-     * @return string
-     */
-    public function toString() : string
+    public function toString(): string
     {
         $parameters = [];
-        foreach ($this->parameters as $key => $value) {
-            $parameters[] = $key . '=' . $this->get($key);
+        foreach ($this->toArray() as $key => $value) {
+            // http_build_query() skips nulls, so make it empty strings
+            if ($value === null) {
+                $value = '';
+            }
+
+            $parameters[$key] = $value;
         }
 
-        return implode('&', $parameters);
+        return http_build_query($parameters);
     }
 
     /**
-     * @return string
+     * {@inheritdoc}
      */
-    public function __toString() : string
+    public function __toString(): string
     {
         return $this->toString();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function fromArray(array $parameters): self
+    {
+        $this->items = $parameters;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toArray(): array
+    {
+        return $this->items;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function fromJson(string $json): self
+    {
+        $decoded = json_decode($json, true);
+        if ($decoded === null) {
+            throw new InvalidJsonException(sprintf(
+                "%s() expects valid JSON, error: '%s', '%s' given",
+                __METHOD__,
+                json_last_error_msg(),
+                $json
+            ));
+        }
+        
+        return $this->fromArray($decoded);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toJson(): string
+    {
+        return json_encode($this->toArray());
     }
 }

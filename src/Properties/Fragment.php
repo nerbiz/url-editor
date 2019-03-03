@@ -2,7 +2,9 @@
 
 namespace Nerbiz\UrlEditor\Properties;
 
-class Fragment
+use Nerbiz\UrlEditor\Contracts\Stringable;
+
+class Fragment implements Stringable
 {
     /**
      * The fragment (hash) of a URL
@@ -10,18 +12,17 @@ class Fragment
      */
     protected $fragment = '';
 
-    public function __construct(string $fragment = null)
+    public function __construct(?string $fragment = null)
     {
         if ($fragment !== null) {
-            $this->set($fragment);
+            $this->fromString($fragment);
         }
     }
 
     /**
-     * @param  string $fragment
-     * @return self
+     * {@inheritdoc}
      */
-    public function set(string $fragment) : self
+    public function fromString(string $fragment): self
     {
         $this->fragment = trim(str_replace('#', '', $fragment));
 
@@ -29,25 +30,17 @@ class Fragment
     }
 
     /**
-     * @return string
+     * {@inheritdoc}
      */
-    public function get() : string
+    public function toString(): string
     {
         return $this->fragment;
     }
 
     /**
-     * @return string
+     * {@inheritdoc}
      */
-    public function toString() : string
-    {
-        return $this->fragment;
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString() : string
+    public function __toString(): string
     {
         return $this->toString();
     }

@@ -6,40 +6,43 @@ use Nerbiz\UrlEditor\Contracts\Arrayable;
 use Nerbiz\UrlEditor\Contracts\Jsonable;
 use Nerbiz\UrlEditor\Contracts\Stringable;
 use Nerbiz\UrlEditor\Exceptions\InvalidJsonException;
-use Nerbiz\UrlEditor\Exceptions\InvalidSlugsException;
 use Nerbiz\UrlEditor\Traits\HasArray;
 
-class Slugs implements Stringable, Arrayable, Jsonable
+class Subdomains implements Stringable, Arrayable, Jsonable
 {
     use HasArray;
 
     /**
-     * @param string|array|null $slugs A string or array of slugs
-     * @throws InvalidSlugsException
+     * @param Host $host The host to derive the subdomains from
      */
-    public function __construct($slugs = null)
+    public function __construct(Host $host)
     {
-        if ($slugs !== null) {
-            if (is_string($slugs)) {
-                $this->fromString($slugs);
-            } elseif (is_array($slugs)) {
-                $this->fromArray($slugs);
-            } else {
-                throw new InvalidSlugsException(sprintf(
-                    "%s() expects a string or array, '%s' given",
-                    __METHOD__,
-                    is_object($slugs) ? get_class($slugs) : gettype($slugs)
-                ));
-            }
-        }
+        $this->fromHost($host);
+    }
+
+    /**
+     * Derive the subdomains from a host
+     * @param Host $host
+     * @return self
+     */
+    public function fromHost(Host $host): self
+    {
+        $tld = $host->getTld()->toString();
+        $hostWithoutTld = trim(substr($host->getOriginal(), 0, (0 - strlen($tld))), '.');
+        $parts = explode('.', $hostWithoutTld);
+
+        array_pop($parts);
+        return $this->fromArray($parts);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function fromString(string $slugs): self
+    public function fromString(string $subdomains): self
     {
-        $this->items = array_values(array_filter(explode('/', trim($slugs))));
+        // Trim dots and spaces
+        $subdomains = trim($subdomains, '. ');
+        $this->items = array_values(explode('.', $subdomains));
 
         return $this;
     }
@@ -49,7 +52,7 @@ class Slugs implements Stringable, Arrayable, Jsonable
      */
     public function toString(): string
     {
-        return implode('/', $this->toArray());
+        return implode('.', $this->items);
     }
 
     /**
@@ -63,9 +66,9 @@ class Slugs implements Stringable, Arrayable, Jsonable
     /**
      * {@inheritdoc}
      */
-    public function fromArray(array $slugs): self
+    public function fromArray(array $subdomains): self
     {
-        $this->items = array_values($slugs);
+        $this->items = array_values($subdomains);
 
         return $this;
     }
@@ -75,7 +78,7 @@ class Slugs implements Stringable, Arrayable, Jsonable
      */
     public function toArray(): array
     {
-        return array_values($this->items);
+        return $this->items;
     }
 
     /**

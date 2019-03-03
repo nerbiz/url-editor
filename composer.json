@@ -3,7 +3,7 @@
   "description": "Easily edit a URL",
   "type": "library",
   "require": {
-    "php": "^7.0"
+    "php": "^7.1"
   },
   "license": "Unlicense",
   "authors": [
@@ -18,7 +18,15 @@
       "Nerbiz\\UrlEditor\\": "src"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "Nerbiz\\UrlEditor\\Tests\\": "tests"
+    }
+  },
   "support" : {
     "docs": "https://github.com/nerbiz/url-editor"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^7.5"
   }
 }
