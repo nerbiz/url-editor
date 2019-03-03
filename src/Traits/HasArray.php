@@ -21,15 +21,25 @@ trait HasArray
     }
 
     /**
-     * Add an item
+     * Append an item
      * @param string $item
      * @return self
      */
-    public function add(string $item): self
+    public function append(string $item): self
     {
         $this->items[] = $item;
 
         return $this;
+    }
+
+    /**
+     * Prepend an item
+     * @param string $item
+     * @return self
+     */
+    public function prepend(string $item): self
+    {
+        return $this->addAt(0, $item);
     }
 
     /**
@@ -41,18 +51,6 @@ trait HasArray
     public function addAt(int $index, string $item): self
     {
         array_splice($this->items, $index, 0, $item);
-
-        return $this;
-    }
-
-    /**
-     * Merge items with existing ones
-     * @param array $items
-     * @return self
-     */
-    public function mergeWith(array $items): self
-    {
-        $this->items = array_merge($this->items, $items);
 
         return $this;
     }

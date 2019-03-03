@@ -21,6 +21,21 @@ trait HasAssociativeArray
     }
 
     /**
+     * Get an item
+     * @param string $key     The name of the item
+     * @param mixed  $default Fallback value, if the item doesn't exist
+     * @return mixed
+     */
+    public function get(string $key, $default = null)
+    {
+        if ($this->has($key)) {
+            return $this->items[$key];
+        }
+
+        return $default;
+    }
+
+    /**
      * Add an item
      * @param string $key
      * @param mixed  $value
@@ -75,20 +90,5 @@ trait HasAssociativeArray
         }
 
         return $this;
-    }
-
-    /**
-     * Get an item
-     * @param string $key     The name of the item
-     * @param mixed  $default Fallback value, if the item doesn't exist
-     * @return mixed
-     */
-    public function get(string $key, $default = null)
-    {
-        if ($this->has($key)) {
-            return $this->items[$key];
-        }
-
-        return $default;
     }
 }

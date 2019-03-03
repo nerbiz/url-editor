@@ -38,39 +38,6 @@ class Host implements Stringable
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function fromString(string $host): self
-    {
-        $host = preg_replace('~^https?://~', '', trim($host));
-        $host = rtrim($host, '/');
-        $this->host = $host;
-
-        // Update the TLD
-        if ($this->tld === null) {
-            $this->tld = new Tld($this);
-        } else {
-            $this->tld->fromHost($this);
-        }
-
-        // Update the subdomains
-        if ($this->subdomains === null) {
-            $this->subdomains = new Subdomains($this);
-        } else {
-            $this->subdomains->fromHost($this);
-        }
-
-        // Set the basename of the host, by removing subdomains and TLD
-        $subdomains = $this->getSubdomains()->toString();
-        $tld = $this->getTld()->toString();
-        $basename = trim(substr($this->host, strlen($subdomains)), '.');
-        $basename = trim(substr($basename, 0, (0 - strlen($tld))), '.');
-        $this->setBasename($basename);
-
-        return $this;
-    }
-
-    /**
      * Get the originally injected host
      * @return string
      */
@@ -103,6 +70,39 @@ class Host implements Stringable
         }
 
         $this->basename = $basename;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function fromString(string $host): self
+    {
+        $host = preg_replace('~^https?://~', '', trim($host));
+        $host = rtrim($host, '/');
+        $this->host = $host;
+
+        // Update the TLD
+        if ($this->tld === null) {
+            $this->tld = new Tld($this);
+        } else {
+            $this->tld->fromHost($this);
+        }
+
+        // Update the subdomains
+        if ($this->subdomains === null) {
+            $this->subdomains = new Subdomains($this);
+        } else {
+            $this->subdomains->fromHost($this);
+        }
+
+        // Set the basename of the host, by removing subdomains and TLD
+        $subdomains = $this->getSubdomains()->toString();
+        $tld = $this->getTld()->toString();
+        $basename = trim(substr($this->host, strlen($subdomains)), '.');
+        $basename = trim(substr($basename, 0, (0 - strlen($tld))), '.');
+        $this->setBasename($basename);
 
         return $this;
     }

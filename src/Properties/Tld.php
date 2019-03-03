@@ -71,7 +71,6 @@ class Tld implements Stringable, Arrayable, Jsonable
         }
 
         // Set the TLD by imploding the TLDs
-        $tlds = array_reverse($tlds);
         $this->fromArray(array_reverse($tlds));
 
         return $this;
