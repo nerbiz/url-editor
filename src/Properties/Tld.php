@@ -7,13 +7,11 @@ use Nerbiz\UrlEditor\Contracts\Jsonable;
 use Nerbiz\UrlEditor\Contracts\Stringable;
 use Nerbiz\UrlEditor\Exceptions\InvalidJsonException;
 use Nerbiz\UrlEditor\Exceptions\InvalidTldException;
+use Nerbiz\UrlEditor\Traits\HasArray;
 
 class Tld implements Stringable, Arrayable, Jsonable
 {
-    /**
-     * @var Host
-     */
-    protected $host;
+    use HasArray;
 
     /**
      * The complete list of all TLDs
@@ -22,18 +20,11 @@ class Tld implements Stringable, Arrayable, Jsonable
     protected $validTldList;
 
     /**
-     * The TLD of the host
-     * @var string
-     */
-    protected $tld;
-
-    /**
      * @param Host $host The host to derive the TLD from
      */
     public function __construct(Host $host)
     {
         $this->setValidTldList();
-        $this->host = $host;
         $this->fromHost($host);
     }
 
@@ -52,6 +43,8 @@ class Tld implements Stringable, Arrayable, Jsonable
             // Get all the lines that are not comments and convert them to lowercase
             preg_match_all('~^(?<tld>[^#].+)~m', $listFileContents, $matches);
             $this->validTldList = array_map('strtolower', $matches['tld']);
+        } else {
+            $this->validTldList = $tldList;
         }
 
         return $this;
@@ -79,7 +72,7 @@ class Tld implements Stringable, Arrayable, Jsonable
 
         // Set the TLD by imploding the TLDs
         $tlds = array_reverse($tlds);
-        $this->tld = implode('.', $tlds);
+        $this->fromArray(array_reverse($tlds));
 
         return $this;
     }
@@ -105,7 +98,7 @@ class Tld implements Stringable, Arrayable, Jsonable
             }
         }
 
-        $this->tld = $tld;
+        $this->items = $tldParts;
 
         return $this;
     }
@@ -115,7 +108,7 @@ class Tld implements Stringable, Arrayable, Jsonable
      */
     public function toString(): string
     {
-        return $this->tld;
+        return implode('.', $this->items);
     }
 
     /**
@@ -132,7 +125,9 @@ class Tld implements Stringable, Arrayable, Jsonable
      */
     public function fromArray(array $tld): self
     {
-        return $this->fromString(implode('.', array_values($tld)));
+        $this->items = array_values($tld);
+
+        return $this;
     }
 
     /**
@@ -140,7 +135,7 @@ class Tld implements Stringable, Arrayable, Jsonable
      */
     public function toArray(): array
     {
-        return explode('.', trim($this->tld, '.'));
+        return $this->items;
     }
 
     /**

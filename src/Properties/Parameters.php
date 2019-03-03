@@ -7,14 +7,11 @@ use Nerbiz\UrlEditor\Contracts\Jsonable;
 use Nerbiz\UrlEditor\Contracts\Stringable;
 use Nerbiz\UrlEditor\Exceptions\InvalidJsonException;
 use Nerbiz\UrlEditor\Exceptions\InvalidParametersException;
+use Nerbiz\UrlEditor\Traits\HasAssociativeArray;
 
 class Parameters implements Stringable, Arrayable, Jsonable
 {
-    /**
-     * The parameters of a URL
-     * @var array
-     */
-    protected $parameters = [];
+    use HasAssociativeArray;
 
     /**
      * @param string|array|null $parameters A string or array of parameters
@@ -29,94 +26,12 @@ class Parameters implements Stringable, Arrayable, Jsonable
                 $this->fromArray($parameters);
             } else {
                 throw new InvalidParametersException(sprintf(
-                    "%s() expects parameter 'parameters' to be string or array, '%s' given",
+                    "%s() expects a string or array, '%s' given",
                     __METHOD__,
                     is_object($parameters) ? get_class($parameters) : gettype($parameters)
                 ));
             }
         }
-    }
-
-    /**
-     * See whether a parameter exists (value can be null)
-     * @param string $key
-     * @return bool
-     */
-    public function has(string $key): bool
-    {
-        return array_key_exists($key, $this->parameters);
-    }
-
-    /**
-     * Add a parameter
-     * @param string $key
-     * @param mixed  $value
-     * @return self
-     */
-    public function add(string $key, $value)
-    {
-        $this->parameters[$key] = $value;
-
-        return $this;
-    }
-
-    /**
-     * Merge parameters with existing ones
-     * @param array $parameters key => value pairs
-     * @return self
-     */
-    public function mergeWith(array $parameters): self
-    {
-        $this->parameters = array_merge($this->parameters, $parameters);
-
-        return $this;
-    }
-
-    /**
-     * Remove a parameter
-     * @param string $key
-     * @return self
-     */
-    public function remove(string $key): self
-    {
-        if ($this->has($key)) {
-            unset($this->parameters[$key]);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Remove a parameter by index
-     * @param int $index
-     * @return self
-     */
-    public function removeAt(int $index): self
-    {
-        $counter = -1;
-        foreach ($this->parameters as $key => $value) {
-            if (++$counter === $index) {
-                unset($this->parameters[$key]);
-                break;
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * Get 1 or all parameters
-     * @param string $key     The name of the parameter
-     * @param mixed  $default Fallback value, if the parameter doesn't exist
-     * @return mixed
-     */
-    public function get(string $key, $default = null)
-    {
-        if ($this->has($key)) {
-            return $this->parameters[$key];
-        }
-
-        return $default;
     }
 
     /**
@@ -129,14 +44,14 @@ class Parameters implements Stringable, Arrayable, Jsonable
             $parameters = substr($parameters, 1);
         }
 
-        $this->parameters = [];
+        $items = [];
         $parts = array_filter(explode('&', $parameters));
 
         if (count($parts) > 0) {
             foreach ($parts as $part) {
                 // If there is no equals sign, the value is null
                 if (mb_strpos($part, '=') === false) {
-                    $this->parameters[$part] = null;
+                    $items[$part] = null;
                 } else {
                     // Get the parameter name and value (decoded)
                     list($key, $value) = explode('=', $part);
@@ -147,10 +62,12 @@ class Parameters implements Stringable, Arrayable, Jsonable
                         $value = null;
                     }
 
-                    $this->parameters[$key] = $value;
+                    $items[$key] = $value;
                 }
             }
         }
+
+        $this->items = $items;
 
         return $this;
     }
@@ -186,7 +103,7 @@ class Parameters implements Stringable, Arrayable, Jsonable
      */
     public function fromArray(array $parameters): self
     {
-        $this->parameters = $parameters;
+        $this->items = $parameters;
 
         return $this;
     }
@@ -196,7 +113,7 @@ class Parameters implements Stringable, Arrayable, Jsonable
      */
     public function toArray(): array
     {
-        return $this->parameters;
+        return $this->items;
     }
 
     /**

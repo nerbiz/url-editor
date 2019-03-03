@@ -6,25 +6,17 @@ use Nerbiz\UrlEditor\Contracts\Arrayable;
 use Nerbiz\UrlEditor\Contracts\Jsonable;
 use Nerbiz\UrlEditor\Contracts\Stringable;
 use Nerbiz\UrlEditor\Exceptions\InvalidJsonException;
+use Nerbiz\UrlEditor\Traits\HasArray;
 
 class Subdomains implements Stringable, Arrayable, Jsonable
 {
-    /**
-     * @var Host
-     */
-    protected $host;
-
-    /**
-     * @var string
-     */
-    protected $subdomains;
+    use HasArray;
 
     /**
      * @param Host $host The host to derive the subdomains from
      */
     public function __construct(Host $host)
     {
-        $this->host = $host;
         $this->fromHost($host);
     }
 
@@ -35,26 +27,12 @@ class Subdomains implements Stringable, Arrayable, Jsonable
      */
     public function fromHost(Host $host): self
     {
-        $tld = $this->host->getTld()->toString();
+        $tld = $host->getTld()->toString();
         $hostWithoutTld = trim(substr($host->getOriginal(), 0, (0 - strlen($tld))), '.');
         $parts = explode('.', $hostWithoutTld);
 
-        // There are no subdomains if there are less than 2 parts
-        if (count($parts) < 2) {
-            return $this->remove();
-        }
-
         array_pop($parts);
         return $this->fromArray($parts);
-    }
-
-    /**
-     * Remove the subdomains
-     * @return self
-     */
-    public function remove()
-    {
-        return $this->fromString('');
     }
 
     /**
@@ -63,7 +41,8 @@ class Subdomains implements Stringable, Arrayable, Jsonable
     public function fromString(string $subdomains): self
     {
         // Trim dots and spaces
-        $this->subdomains = trim($subdomains, '. ');
+        $subdomains = trim($subdomains, '. ');
+        $this->items = array_values(explode('.', $subdomains));
 
         return $this;
     }
@@ -73,7 +52,7 @@ class Subdomains implements Stringable, Arrayable, Jsonable
      */
     public function toString(): string
     {
-        return $this->subdomains;
+        return implode('.', $this->items);
     }
 
     /**
@@ -89,11 +68,7 @@ class Subdomains implements Stringable, Arrayable, Jsonable
      */
     public function fromArray(array $subdomains): self
     {
-        if (count($subdomains) < 1) {
-            return $this->remove();
-        }
-
-        $this->subdomains = implode('.', array_values($subdomains));
+        $this->items = array_values($subdomains);
 
         return $this;
     }
@@ -103,7 +78,7 @@ class Subdomains implements Stringable, Arrayable, Jsonable
      */
     public function toArray(): array
     {
-        return array_filter(explode('.', $this->subdomains));
+        return $this->items;
     }
 
     /**

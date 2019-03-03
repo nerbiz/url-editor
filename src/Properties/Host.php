@@ -64,7 +64,8 @@ class Host implements Stringable
         $subdomains = $this->getSubdomains()->toString();
         $tld = $this->getTld()->toString();
         $basename = trim(substr($this->host, strlen($subdomains)), '.');
-        $this->basename = trim(substr($basename, 0, (0 - strlen($tld))), '.');
+        $basename = trim(substr($basename, 0, (0 - strlen($tld))), '.');
+        $this->setBasename($basename);
 
         return $this;
     }
