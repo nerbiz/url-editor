@@ -2,13 +2,14 @@
 
 namespace Nerbiz\UrlEditor;
 
+use Nerbiz\UrlEditor\Contracts\Stringable;
 use Nerbiz\UrlEditor\Exceptions\InvalidUrlException;
 use Nerbiz\UrlEditor\Properties\Fragment;
 use Nerbiz\UrlEditor\Properties\Host;
 use Nerbiz\UrlEditor\Properties\Parameters;
 use Nerbiz\UrlEditor\Properties\Slugs;
 
-class UrlEditor
+class UrlEditor implements Stringable
 {
     /**
      * @var Host
@@ -37,12 +38,6 @@ class UrlEditor
     protected $url;
 
     /**
-     * All the URL parts
-     * @var array
-     */
-    protected $urlParts;
-
-    /**
      * Whether the URL is secure (https) or not (http)
      * @var bool
      */
@@ -56,36 +51,15 @@ class UrlEditor
     {
         // Set a given URL, or use the current
         if ($url !== null) {
-            $this->setUrl($url);
+            $this->fromString($url);
         } else {
-            $this->setUrl(sprintf(
+            $this->fromString(sprintf(
                 'http%s://%s%s',
                 (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 's' : '',
                 rtrim($_SERVER['HTTP_HOST'], '/'),
                 '/' . ltrim($_SERVER['REQUEST_URI'], '/')
             ));
         }
-
-        $this->urlParts = parse_url($this->url);
-        $this->setIsSecure(mb_substr($this->urlParts['scheme'], 0, 5) === 'https');
-
-        $this->host = new Host($this->urlParts['host']);
-        $this->slugs = new Slugs($this->urlParts['path'] ?? null);
-        $this->parameters = new Parameters($this->urlParts['query'] ?? null);
-        $this->fragment = new Fragment($this->urlParts['fragment'] ?? null);
-    }
-
-    /**
-     * @param string $url
-     * @return self
-     * @throws InvalidUrlException
-     */
-    public function setUrl(string $url): self
-    {
-        $this->checkUrl($url);
-        $this->url = $url;
-
-        return $this;
     }
 
     /**
@@ -108,15 +82,6 @@ class UrlEditor
     }
 
     /**
-     * Get the URL parts
-     * @return array
-     */
-    public function getParts(): array
-    {
-        return $this->urlParts;
-    }
-
-    /**
      * @return bool
      */
     public function isSecure(): bool
@@ -136,6 +101,23 @@ class UrlEditor
     }
 
     /**
+     * Get the base of the URL
+     * @return string
+     */
+    public function getBase(): string
+    {
+        $baseUrl = sprintf(
+            'http%s://%s',
+            $this->isSecure() ? 's' : '',
+            $this->getHost()->toString()
+        );
+
+        // See if the URL is valid
+        $this->checkUrl($baseUrl);
+        return $baseUrl;
+    }
+
+    /**
      * Get the full URL
      * @return string
      */
@@ -147,9 +129,8 @@ class UrlEditor
 
         // Construct the full URL
         $fullUrl = sprintf(
-            'http%s://%s%s%s%s',
-            $this->isSecure() ? 's' : '',
-            $this->getHost()->toString(),
+            '%s%s%s%s',
+            $this->getBase(),
             ($slugs !== '')
                 ? '/' . $slugs
                 : '',
@@ -217,9 +198,72 @@ class UrlEditor
     /**
      * Alias of getFragment()
      * @return Fragment
+     * @see UrlEditor::getFragment()
      */
     public function getAnchor(): Fragment
     {
         return $this->getFragment();
+    }
+
+    /**
+     * {@inheritdoc}
+     * @throws InvalidUrlException
+     */
+    public function fromString(string $url): self
+    {
+        $this->checkUrl($url);
+        $this->url = $url;
+
+        // Get the parts of the URL
+        $urlParts = parse_url($this->url);
+
+        // Set whether the URL is secure
+        $this->setIsSecure(mb_substr($urlParts['scheme'], 0, 5) === 'https');
+
+        // Create or update the Host object
+        if ($this->host === null) {
+            $this->host = new Host($urlParts['host']);
+        } else {
+            $this->host->fromString($urlParts['host']);
+        }
+
+        // Create or update the Slugs object
+        if ($this->slugs === null) {
+            $this->slugs = new Slugs($urlParts['path'] ?? null);
+        } else {
+            $this->slugs->fromString($urlParts['path'] ?? null);
+        }
+
+        // Create or update the Parameters object
+        if ($this->parameters === null) {
+            $this->parameters = new Parameters($urlParts['query'] ?? null);
+        } else {
+            $this->parameters->fromString($urlParts['query'] ?? null);
+        }
+
+        // Create or update the Fragment object
+        if ($this->fragment === null) {
+            $this->fragment = new Fragment($urlParts['fragment'] ?? null);
+        } else {
+            $this->fragment->fromString($urlParts['fragment'] ?? null);
+        }
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toString(): string
+    {
+        return $this->getFull();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function __toString(): string
+    {
+        return $this->toString();
     }
 }
