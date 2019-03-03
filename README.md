@@ -5,7 +5,9 @@ Simplifying adding/removing slugs, or changing GET parameters. A redirect method
 ## Installation
 
 Include this project with [Composer](https://getcomposer.org/):  
-```composer require nerbiz/url-editor```
+```cli
+composer require nerbiz/url-editor
+```
 
 ## Usage
 
