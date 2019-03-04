@@ -69,7 +69,7 @@ class Host implements Stringable
             ));
         }
 
-        $this->basename = $basename;
+        $this->basename = trim($basename);
 
         return $this;
     }

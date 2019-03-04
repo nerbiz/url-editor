@@ -42,9 +42,7 @@ class Subdomains implements Stringable, Arrayable, Jsonable
     {
         // Trim dots and spaces
         $subdomains = trim($subdomains, '. ');
-        $this->items = $this->fromArray(explode('.', $subdomains));
-
-        return $this;
+        return $this->fromArray(explode('.', $subdomains));
     }
 
     /**
@@ -68,7 +66,9 @@ class Subdomains implements Stringable, Arrayable, Jsonable
      */
     public function fromArray(array $subdomains): self
     {
-        $this->items = array_values(array_filter($subdomains));
+        $this->items = array_values(array_filter(array_map(function ($item) {
+            return trim($item, '. ');
+        }, $subdomains)));
 
         return $this;
     }

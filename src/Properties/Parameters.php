@@ -67,9 +67,7 @@ class Parameters implements Stringable, Arrayable, Jsonable
             }
         }
 
-        $this->items = $this->fromArray($items);
-
-        return $this;
+        return $this->fromArray($items);
     }
 
     /**

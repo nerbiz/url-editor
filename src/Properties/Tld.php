@@ -72,9 +72,7 @@ class Tld implements Stringable, Arrayable, Jsonable
         }
 
         // Reverse the array again, to get the original order
-        $this->fromArray(array_reverse($tlds));
-
-        return $this;
+        return $this->fromArray(array_reverse($tlds));
     }
 
     /**
@@ -85,9 +83,7 @@ class Tld implements Stringable, Arrayable, Jsonable
     {
         // Trim dots and spaces
         $tld = trim($tld, '. ');
-        $this->items = $this->fromArray(explode('.', $tld));
-
-        return $this;
+        return $this->fromArray(explode('.', $tld));
     }
 
     /**
@@ -112,7 +108,9 @@ class Tld implements Stringable, Arrayable, Jsonable
      */
     public function fromArray(array $tld): self
     {
-        $tld = array_values(array_filter($tld));
+        $tld = array_values(array_filter(array_map(function ($item) {
+            return trim($item, '. ');
+        }, $tld)));
 
         // See if any invalid TLDs are given
         foreach ($tld as $tldPart) {
