@@ -28,7 +28,7 @@ class Subdomains implements Stringable, Arrayable, Jsonable
     public function fromHost(Host $host): self
     {
         $tld = $host->getTld()->toString();
-        $hostWithoutTld = trim(substr($host->getOriginal(), 0, (0 - strlen($tld))), '.');
+        $hostWithoutTld = trim(mb_substr($host->getOriginal(), 0, (0 - strlen($tld))), '.');
         $parts = explode('.', $hostWithoutTld);
 
         array_pop($parts);
@@ -42,7 +42,7 @@ class Subdomains implements Stringable, Arrayable, Jsonable
     {
         // Trim dots and spaces
         $subdomains = trim($subdomains, '. ');
-        $this->items = array_values(explode('.', $subdomains));
+        $this->items = $this->fromArray(explode('.', $subdomains));
 
         return $this;
     }
@@ -68,7 +68,7 @@ class Subdomains implements Stringable, Arrayable, Jsonable
      */
     public function fromArray(array $subdomains): self
     {
-        $this->items = array_values($subdomains);
+        $this->items = array_values(array_filter($subdomains));
 
         return $this;
     }

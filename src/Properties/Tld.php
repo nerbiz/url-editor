@@ -83,22 +83,9 @@ class Tld implements Stringable, Arrayable, Jsonable
      */
     public function fromString(string $tld): self
     {
-        $tld = trim($tld, '.');
-
-        // See if any invalid TLDs are given
-        $tldParts = explode('.', $tld);
-        foreach ($tldParts as $tldPart) {
-            if (! in_array(strtolower($tldPart), $this->validTldList, true)) {
-                throw new InvalidTldException(sprintf(
-                    "%s() expects a valid TLD, '%s' in '%s' is invalid",
-                    __METHOD__,
-                    $tldPart,
-                    $tld
-                ));
-            }
-        }
-
-        $this->items = $tldParts;
+        // Trim dots and spaces
+        $tld = trim($tld, '. ');
+        $this->items = $this->fromArray(explode('.', $tld));
 
         return $this;
     }
@@ -125,7 +112,21 @@ class Tld implements Stringable, Arrayable, Jsonable
      */
     public function fromArray(array $tld): self
     {
-        $this->items = array_values($tld);
+        $tld = array_values(array_filter($tld));
+
+        // See if any invalid TLDs are given
+        foreach ($tld as $tldPart) {
+            if (! in_array(strtolower($tldPart), $this->validTldList, true)) {
+                throw new InvalidTldException(sprintf(
+                    "%s() expects a valid TLD, '%s' in '%s' is invalid",
+                    __METHOD__,
+                    $tldPart,
+                    $tld
+                ));
+            }
+        }
+
+        $this->items = $tld;
 
         return $this;
     }
