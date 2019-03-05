@@ -45,7 +45,7 @@ class UrlEditorTest extends TestCase
         // Multiple lines for readability
         $expected = 'http://www.another-example.co.uk'
             . '/slug-1/slug-2'
-            . '?param-1=value-1&empty=&another-empty=&param-2=value-2'
+            . '?param-1=value-1&empty=&another-empty=&param-2=value-2&special=%40+%25'
             . '#element-id';
         $urlEditor = new UrlEditor($url);
 
@@ -54,7 +54,9 @@ class UrlEditorTest extends TestCase
         $urlEditor->getHost()->getSubdomains()->fromString(' .www. ');
         $urlEditor->getHost()->getTld()->fromString(' .co.uk. ');
         $urlEditor->getSlugs()->fromString(' /slug-1/slug-2/ ');
-        $urlEditor->getParameters()->fromString('?param-1=value-1&empty=&another-empty=&param-2=value-2');
+        $urlEditor->getParameters()->fromString(
+            '?param-1=value-1&empty=&another-empty=&param-2=value-2&special=%40+%25'
+        );
         $urlEditor->getFragment()->fromString('element-id');
 
         $this->assertEquals($expected, $urlEditor->getFull());
@@ -71,7 +73,7 @@ class UrlEditorTest extends TestCase
         // Multiple lines for readability
         $expected = 'http://www.another-example.co.uk'
             . '/slug-1/slug-2'
-            . '?param-1=value-1&empty=&another-empty=&param-2=value-2'
+            . '?param-1=value-1&empty=&another-empty=&param-2=value-2&special=%40+%25'
             . '#element-id';
         $urlEditor = new UrlEditor($url);
 
@@ -84,7 +86,8 @@ class UrlEditorTest extends TestCase
             'param-1' => 'value-1',
             'empty' => null,
             'another-empty' => '',
-            'param-2' => 'value-2'
+            'param-2' => 'value-2',
+            'special' => ' @+%',
         ]);
         $urlEditor->getFragment()->fromString('element-id');
 

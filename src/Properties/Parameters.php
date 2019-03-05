@@ -101,7 +101,12 @@ class Parameters implements Stringable, Arrayable, Jsonable
      */
     public function fromArray(array $parameters): self
     {
-        $this->items = $parameters;
+        $items = [];
+        foreach ($parameters as $key => $value) {
+            $items[$key] = trim(urldecode($value));
+        }
+
+        $this->items = $items;
 
         return $this;
     }

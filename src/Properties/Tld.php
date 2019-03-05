@@ -81,8 +81,6 @@ class Tld implements Stringable, Arrayable, Jsonable
      */
     public function fromString(string $tld): self
     {
-        // Trim dots and spaces
-        $tld = trim($tld, '. ');
         return $this->fromArray(explode('.', $tld));
     }
 
@@ -109,6 +107,7 @@ class Tld implements Stringable, Arrayable, Jsonable
     public function fromArray(array $tld): self
     {
         $tld = array_values(array_filter(array_map(function ($item) {
+            // Trim dots and spaces
             return trim($item, '. ');
         }, $tld)));
 
