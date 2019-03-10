@@ -1,5 +1,10 @@
 # Release notes
 
+## 1.3.0
+
+* Added the HttpAuth class for adding a username and password to a URL.
+* Added the InvalidHttpAuthException class.
+
 ## 1.2.0
 
 * Added the Port class, to edit the port of a URL.
