@@ -1,5 +1,12 @@
 # Release notes
 
+## 1.2.0
+
+* Added the Port class, to edit the port of a URL.
+* Added the Intable interface.
+* Added the InvalidPortException class.
+* Small fixes and improvements.
+
 ## 1.1.0
 
 * Added the Host, Subdomains and Tld classes.
