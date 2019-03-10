@@ -6,12 +6,18 @@ use Nerbiz\UrlEditor\Contracts\Stringable;
 use Nerbiz\UrlEditor\Exceptions\InvalidUrlException;
 use Nerbiz\UrlEditor\Properties\Fragment;
 use Nerbiz\UrlEditor\Properties\Host;
+use Nerbiz\UrlEditor\Properties\HttpAuth;
 use Nerbiz\UrlEditor\Properties\Parameters;
 use Nerbiz\UrlEditor\Properties\Port;
 use Nerbiz\UrlEditor\Properties\Slugs;
 
 class UrlEditor implements Stringable
 {
+    /**
+     * @var HttpAuth
+     */
+    protected $httpAuth;
+
     /**
      * @var Host
      */
@@ -112,11 +118,15 @@ class UrlEditor implements Stringable
      */
     public function getBase(): string
     {
+        $httpAuth = $this->getHttpAuth()->toString();
         $port = $this->getPort()->toString();
 
         $baseUrl = sprintf(
-            'http%s://%s%s',
+            'http%s://%s%s%s',
             $this->isSecure() ? 's' : '',
+            ($httpAuth !== '')
+                ? $httpAuth . '@'
+                : '',
             $this->getHost()->toString(),
             ($port !== '')
                 ? ':' . $port
@@ -172,6 +182,14 @@ class UrlEditor implements Stringable
         );
 
         exit;
+    }
+
+    /**
+     * @return HttpAuth
+     */
+    public function getHttpAuth(): HttpAuth
+    {
+        return $this->httpAuth;
     }
 
     /**
@@ -238,6 +256,19 @@ class UrlEditor implements Stringable
 
         // Set whether the URL is secure
         $this->setIsSecure(mb_substr($urlParts['scheme'], 0, 5) === 'https');
+
+        // Create or update the HttpAuth object
+        if ($this->httpAuth === null) {
+            $this->httpAuth = new HttpAuth(
+                $urlParts['user'] ?? null,
+                $urlParts['pass'] ?? null
+            );
+        } else {
+            $this->httpAuth->fromArray([
+                'username' => $urlParts['user'] ?? null,
+                'password' => $urlParts['pass'] ?? null,
+            ]);
+        }
 
         // Create or update the Host object
         if ($this->host === null) {
