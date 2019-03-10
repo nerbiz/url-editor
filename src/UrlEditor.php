@@ -7,6 +7,7 @@ use Nerbiz\UrlEditor\Exceptions\InvalidUrlException;
 use Nerbiz\UrlEditor\Properties\Fragment;
 use Nerbiz\UrlEditor\Properties\Host;
 use Nerbiz\UrlEditor\Properties\Parameters;
+use Nerbiz\UrlEditor\Properties\Port;
 use Nerbiz\UrlEditor\Properties\Slugs;
 
 class UrlEditor implements Stringable
@@ -15,6 +16,11 @@ class UrlEditor implements Stringable
      * @var Host
      */
     protected $host;
+
+    /**
+     * @var Port
+     */
+    protected $port;
 
     /**
      * @var Slugs
@@ -106,10 +112,15 @@ class UrlEditor implements Stringable
      */
     public function getBase(): string
     {
+        $port = $this->getPort()->toString();
+
         $baseUrl = sprintf(
-            'http%s://%s',
+            'http%s://%s%s',
             $this->isSecure() ? 's' : '',
-            $this->getHost()->toString()
+            $this->getHost()->toString(),
+            ($port !== '')
+                ? ':' . $port
+                : ''
         );
 
         // See if the URL is valid
@@ -172,6 +183,14 @@ class UrlEditor implements Stringable
     }
 
     /**
+     * @return Port
+     */
+    public function getPort(): Port
+    {
+        return $this->port;
+    }
+
+    /**
      * @return Slugs
      */
     public function getSlugs(): Slugs
@@ -225,6 +244,13 @@ class UrlEditor implements Stringable
             $this->host = new Host($urlParts['host']);
         } else {
             $this->host->fromString($urlParts['host']);
+        }
+
+        // Create or update the Port object
+        if ($this->port === null) {
+            $this->port = new Port($urlParts['port'] ?? 80);
+        } else {
+            $this->port->fromInt($urlParts['port'] ?? 80);
         }
 
         // Create or update the Slugs object

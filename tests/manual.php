@@ -11,5 +11,5 @@ foreach (array_unique(array_merge(
     require $filepath;
 }
 
-$url = 'http://www.example.co.uk/slug-1/slug-2?param-1=value-1&empty=&another-empty&param-2=value-2#element-id';
+$url = 'http://www.example.co.uk:8080/slug-1/slug-2?param-1=value-1&empty=&another-empty&param-2=value-2#element-id';
 $urlEditor = new Nerbiz\UrlEditor\UrlEditor($url);
