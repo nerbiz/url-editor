@@ -39,14 +39,14 @@ class Parameters implements Stringable, Arrayable, Jsonable
      */
     public function fromString(string $parameters): self
     {
-        // Remove a leading question mark
-        if (substr($parameters, 0, 1) === '?') {
-            $parameters = substr($parameters, 1);
-        }
+        // Trim question marks, ampersands and spaces
+        $parameters = trim($parameters, '?& ');
 
-        $items = [];
+        // Make a list of parameters
         $parts = array_filter(explode('&', $parameters));
 
+        // Create a parameters array
+        $items = [];
         if (count($parts) > 0) {
             foreach ($parts as $part) {
                 // If there is no equals sign, the value is null
@@ -67,9 +67,7 @@ class Parameters implements Stringable, Arrayable, Jsonable
             }
         }
 
-        $this->items = $items;
-
-        return $this;
+        return $this->fromArray($items);
     }
 
     /**
@@ -103,7 +101,12 @@ class Parameters implements Stringable, Arrayable, Jsonable
      */
     public function fromArray(array $parameters): self
     {
-        $this->items = $parameters;
+        $items = [];
+        foreach ($parameters as $key => $value) {
+            $items[$key] = trim(urldecode($value));
+        }
+
+        $this->items = $items;
 
         return $this;
     }

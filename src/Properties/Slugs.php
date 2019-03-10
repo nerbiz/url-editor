@@ -39,9 +39,7 @@ class Slugs implements Stringable, Arrayable, Jsonable
      */
     public function fromString(string $slugs): self
     {
-        $this->items = array_values(array_filter(explode('/', trim($slugs))));
-
-        return $this;
+        return $this->fromArray(explode('/', $slugs));
     }
 
     /**
@@ -65,7 +63,10 @@ class Slugs implements Stringable, Arrayable, Jsonable
      */
     public function fromArray(array $slugs): self
     {
-        $this->items = array_values($slugs);
+        $this->items = array_values(array_filter(array_map(function ($item) {
+            // Trim slashes and spaces
+            return trim($item, '/ ');
+        }, $slugs)));
 
         return $this;
     }
@@ -75,7 +76,7 @@ class Slugs implements Stringable, Arrayable, Jsonable
      */
     public function toArray(): array
     {
-        return array_values($this->items);
+        return $this->items;
     }
 
     /**

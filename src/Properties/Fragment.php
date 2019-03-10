@@ -24,7 +24,8 @@ class Fragment implements Stringable
      */
     public function fromString(string $fragment): self
     {
-        $this->fragment = trim(str_replace('#', '', $fragment));
+        // Trim hashes and spaces
+        $this->fragment = trim($fragment, '# ');
 
         return $this;
     }

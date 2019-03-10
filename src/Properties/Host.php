@@ -69,7 +69,7 @@ class Host implements Stringable
             ));
         }
 
-        $this->basename = $basename;
+        $this->basename = trim($basename);
 
         return $this;
     }
@@ -79,18 +79,17 @@ class Host implements Stringable
      */
     public function fromString(string $host): self
     {
-        $host = preg_replace('~^https?://~', '', trim($host));
-        $host = rtrim($host, '/');
+        $host = preg_replace('~^https?://~', '', trim($host, '/ '));
         $this->host = $host;
 
-        // Update the TLD
+        // Create or update the TLD object
         if ($this->tld === null) {
             $this->tld = new Tld($this);
         } else {
             $this->tld->fromHost($this);
         }
 
-        // Update the subdomains
+        // Create or update the Subdomains object
         if ($this->subdomains === null) {
             $this->subdomains = new Subdomains($this);
         } else {
@@ -100,17 +99,19 @@ class Host implements Stringable
         // Set the basename of the host, by removing subdomains and TLD
         $subdomains = $this->getSubdomains()->toString();
         $tld = $this->getTld()->toString();
-        $basename = trim(substr($this->host, strlen($subdomains)), '.');
-        $basename = trim(substr($basename, 0, (0 - strlen($tld))), '.');
+        $basename = trim(mb_substr($this->host, strlen($subdomains)), '.');
+        $basename = trim(mb_substr($basename, 0, (0 - strlen($tld))), '.');
         $this->setBasename($basename);
 
         return $this;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function toString(): string
     {
         $subdomains = $this->getSubdomains()->toString();
-        $tld = $this->getTld()->toString();
 
         return sprintf(
             '%s%s.%s',
@@ -118,10 +119,13 @@ class Host implements Stringable
                 ? $subdomains . '.'
                 : '',
             $this->getBasename(),
-            $tld
+            $this->getTld()->toString()
         );
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function __toString(): string
     {
         return $this->toString();

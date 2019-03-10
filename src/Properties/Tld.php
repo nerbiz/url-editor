@@ -58,6 +58,7 @@ class Tld implements Stringable, Arrayable, Jsonable
     public function fromHost(Host $host): self
     {
         $tlds = [];
+        // Reverse the parts, so the TLD(s) are the first items
         $hostParts = array_reverse(explode('.', $host->getOriginal()));
 
         foreach ($hostParts as $hostPart) {
@@ -70,10 +71,8 @@ class Tld implements Stringable, Arrayable, Jsonable
             }
         }
 
-        // Set the TLD by imploding the TLDs
-        $this->fromArray(array_reverse($tlds));
-
-        return $this;
+        // Reverse the array again, to get the original order
+        return $this->fromArray(array_reverse($tlds));
     }
 
     /**
@@ -82,24 +81,7 @@ class Tld implements Stringable, Arrayable, Jsonable
      */
     public function fromString(string $tld): self
     {
-        $tld = trim($tld, '.');
-
-        // See if any invalid TLDs are given
-        $tldParts = explode('.', $tld);
-        foreach ($tldParts as $tldPart) {
-            if (! in_array(strtolower($tldPart), $this->validTldList, true)) {
-                throw new InvalidTldException(sprintf(
-                    "%s() expects a valid TLD, '%s' in '%s' is invalid",
-                    __METHOD__,
-                    $tldPart,
-                    $tld
-                ));
-            }
-        }
-
-        $this->items = $tldParts;
-
-        return $this;
+        return $this->fromArray(explode('.', $tld));
     }
 
     /**
@@ -124,7 +106,24 @@ class Tld implements Stringable, Arrayable, Jsonable
      */
     public function fromArray(array $tld): self
     {
-        $this->items = array_values($tld);
+        $tld = array_values(array_filter(array_map(function ($item) {
+            // Trim dots and spaces
+            return trim($item, '. ');
+        }, $tld)));
+
+        // See if any invalid TLDs are given
+        foreach ($tld as $tldPart) {
+            if (! in_array(strtolower($tldPart), $this->validTldList, true)) {
+                throw new InvalidTldException(sprintf(
+                    "%s() expects a valid TLD, '%s' in '%s' is invalid",
+                    __METHOD__,
+                    $tldPart,
+                    $tld
+                ));
+            }
+        }
+
+        $this->items = $tld;
 
         return $this;
     }
