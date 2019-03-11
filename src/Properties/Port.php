@@ -16,10 +16,12 @@ class Port implements Intable, Stringable
 
     /**
      * Ports to ignore when outputting as string
-     * For instance: http://example.com is implicitly http://example.com:80
+     * For instance:
+     * http://example.com is implicitly http://example.com:80
+     * https://example.com is implicitly http://example.com:443
      * @var int[]
      */
-    protected $ignoredPorts = [80];
+    protected $ignoredPorts = [80, 443];
 
     /**
      * @param int $port The host to derive the port number from

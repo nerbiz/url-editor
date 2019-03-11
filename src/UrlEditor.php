@@ -278,10 +278,11 @@ class UrlEditor implements Stringable
         }
 
         // Create or update the Port object
+        $implicitPort = ($this->isSecure()) ? 443 : 80;
         if ($this->port === null) {
-            $this->port = new Port($urlParts['port'] ?? 80);
+            $this->port = new Port($urlParts['port'] ?? $implicitPort);
         } else {
-            $this->port->fromInt($urlParts['port'] ?? 80);
+            $this->port->fromInt($urlParts['port'] ?? $implicitPort);
         }
 
         // Create or update the Slugs object
