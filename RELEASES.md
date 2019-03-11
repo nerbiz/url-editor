@@ -1,5 +1,11 @@
 # Release notes
 
+## 1.4.0
+
+* Removed the Host class.
+* All URL properties are now part of the main UrlEditor class (Subdomains and Tld used to be part of Host).
+* Default (in)secure HTTP port numbers are now static properties of Port.
+
 ## 1.3.1
 
 * Added 443 as an ignored port when outputting Port as string.
