@@ -261,7 +261,9 @@ class UrlEditor implements Stringable
         }
 
         // Create or update the Port object
-        $implicitPort = ($this->isSecure()) ? 443 : 80;
+        $implicitPort = ($this->isSecure())
+            ? Port::getSecureHttpPort()
+            : Port::getInsecureHttpPort();
         if ($this->port === null) {
             $this->port = new Port($this->urlParts['port'] ?? $implicitPort);
         } else {

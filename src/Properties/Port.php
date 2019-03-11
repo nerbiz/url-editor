@@ -9,6 +9,18 @@ use Nerbiz\UrlEditor\Exceptions\InvalidPortException;
 class Port implements Intable, Stringable
 {
     /**
+     * The default port number for insecure HTTP connections
+     * @var int
+     */
+    protected static $insecureHttpPort = 80;
+
+    /**
+     * The default port number for secure HTTP connections
+     * @var int
+     */
+    protected static $secureHttpPort = 443;
+
+    /**
      * The port of a URL
      * @var int
      */
@@ -17,17 +29,23 @@ class Port implements Intable, Stringable
     /**
      * Ports to ignore when outputting as string
      * For instance:
-     * http://example.com is implicitly http://example.com:80
-     * https://example.com is implicitly http://example.com:443
+     * http://example.com is implicitly http://example.com:80 by default
+     * https://example.com is implicitly http://example.com:443 by default
      * @var int[]
      */
-    protected $ignoredPorts = [80, 443];
+    protected $implicitPorts = [];
 
     /**
      * @param int $port The host to derive the port number from
      */
     public function __construct(int $port)
     {
+        // Set the implicit ports
+        $this->implicitPorts = [
+            static::$insecureHttpPort,
+            static::$secureHttpPort,
+        ];
+
         $this->fromInt($port);
     }
 
@@ -77,7 +95,7 @@ class Port implements Intable, Stringable
     public function toString(bool $force = false): string
     {
         // Don't return an ignored port number
-        if (! $force && in_array($this->port, $this->ignoredPorts, true)) {
+        if (! $force && in_array($this->port, $this->implicitPorts, true)) {
             return '';
         }
 
@@ -90,5 +108,39 @@ class Port implements Intable, Stringable
     public function __toString(): string
     {
         return $this->toString();
+    }
+
+    /**
+     * @return int
+     */
+    public static function getInsecureHttpPort(): int
+    {
+        return self::$insecureHttpPort;
+    }
+
+    /**
+     * @param int $insecureHttpPort
+     * @return void
+     */
+    public static function setInsecureHttpPort(int $insecureHttpPort): void
+    {
+        self::$insecureHttpPort = $insecureHttpPort;
+    }
+
+    /**
+     * @return int
+     */
+    public static function getSecureHttpPort(): int
+    {
+        return self::$secureHttpPort;
+    }
+
+    /**
+     * @param int $secureHttpPort
+     * @return void
+     */
+    public static function setSecureHttpPort(int $secureHttpPort): void
+    {
+        self::$secureHttpPort = $secureHttpPort;
     }
 }
