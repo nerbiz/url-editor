@@ -6,6 +6,7 @@ use Nerbiz\UrlEditor\Contracts\Arrayable;
 use Nerbiz\UrlEditor\Contracts\Jsonable;
 use Nerbiz\UrlEditor\Contracts\Stringable;
 use Nerbiz\UrlEditor\Exceptions\InvalidJsonException;
+use Nerbiz\UrlEditor\Exceptions\InvalidSubdomainsException;
 use Nerbiz\UrlEditor\Traits\HasArray;
 
 class Subdomains implements Stringable, Arrayable, Jsonable
@@ -13,26 +14,24 @@ class Subdomains implements Stringable, Arrayable, Jsonable
     use HasArray;
 
     /**
-     * @param Host $host The host to derive the subdomains from
+     * @param string|array|null $subdomains A string or array of subdomains
+     * @throws InvalidSubdomainsException
      */
-    public function __construct(Host $host)
+    public function __construct($subdomains = null)
     {
-        $this->fromHost($host);
-    }
-
-    /**
-     * Derive the subdomains from a host
-     * @param Host $host
-     * @return self
-     */
-    public function fromHost(Host $host): self
-    {
-        $tld = $host->getTld()->toString();
-        $hostWithoutTld = trim(mb_substr($host->getOriginal(), 0, (0 - strlen($tld))), '.');
-        $parts = explode('.', $hostWithoutTld);
-
-        array_pop($parts);
-        return $this->fromArray($parts);
+        if ($subdomains !== null) {
+            if (is_string($subdomains)) {
+                $this->fromString($subdomains);
+            } elseif (is_array($subdomains)) {
+                $this->fromArray($subdomains);
+            } else {
+                throw new InvalidSubdomainsException(sprintf(
+                    "%s() expects a string or array, '%s' given",
+                    __METHOD__,
+                    is_object($subdomains) ? get_class($subdomains) : gettype($subdomains)
+                ));
+            }
+        }
     }
 
     /**

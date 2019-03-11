@@ -20,9 +20,9 @@ class Tld implements Stringable, Arrayable, Jsonable
     protected $validTldList;
 
     /**
-     * @param Host $host The host to derive the TLD from
+     * @param string $host The host to derive the TLD from
      */
-    public function __construct(Host $host)
+    public function __construct(string $host)
     {
         $this->setValidTldList();
         $this->fromHost($host);
@@ -52,14 +52,14 @@ class Tld implements Stringable, Arrayable, Jsonable
 
     /**
      * Derive the TLD from a host
-     * @param Host $host
+     * @param string $host
      * @return self
      */
-    public function fromHost(Host $host): self
+    public function fromHost(string $host): self
     {
         $tlds = [];
         // Reverse the parts, so the TLD(s) are the first items
-        $hostParts = array_reverse(explode('.', $host->getOriginal()));
+        $hostParts = array_reverse(explode('.', $host));
 
         foreach ($hostParts as $hostPart) {
             // Keep the TLD if it matches

@@ -50,9 +50,9 @@ class UrlEditorTest extends TestCase
         $urlEditor = new UrlEditor($url);
 
         $urlEditor->setIsSecure(false);
-        $urlEditor->getHost()->setBasename(' another-example ');
-        $urlEditor->getHost()->getSubdomains()->fromString(' .www. ');
-        $urlEditor->getHost()->getTld()->fromString(' .co.uk. ');
+        $urlEditor->setDomainBase(' another-example ');
+        $urlEditor->getSubdomains()->fromString(' .www. ');
+        $urlEditor->getTld()->fromString(' .co.uk. ');
         $urlEditor->getSlugs()->fromString(' /slug-1/slug-2/ ');
         $urlEditor->getParameters()->fromString(
             '?param-1=value-1&empty=&another-empty=&param-2=value-2&special=%40+%25'
@@ -78,9 +78,9 @@ class UrlEditorTest extends TestCase
         $urlEditor = new UrlEditor($url);
 
         $urlEditor->setIsSecure(false);
-        $urlEditor->getHost()->setBasename(' another-example ');
-        $urlEditor->getHost()->getSubdomains()->fromArray(['', ' .www. ', null]);
-        $urlEditor->getHost()->getTld()->fromArray(['', 'co', 'uk', null]);
+        $urlEditor->setDomainBase(' another-example ');
+        $urlEditor->getSubdomains()->fromArray(['', ' .www. ', null]);
+        $urlEditor->getTld()->fromArray(['', 'co', 'uk', null]);
         $urlEditor->getSlugs()->fromArray(['', 'slug-1', 'slug-2', null]);
         $urlEditor->getParameters()->fromArray([
             'param-1' => 'value-1',
