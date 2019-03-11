@@ -1,5 +1,9 @@
 # Release notes
 
+## 1.4.1
+
+* The port number is now updated when changing isSecure.
+
 ## 1.4.0
 
 * Removed the Host class.
