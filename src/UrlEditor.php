@@ -129,6 +129,15 @@ class UrlEditor implements Stringable
     {
         $this->isSecure = $secure;
 
+        // Update the port accordingly
+        if ($this->port !== null) {
+            $newPort = ($secure)
+                ? Port::getSecureHttpPort()
+                : Port::getInsecureHttpPort();
+
+            $this->getPort()->fromInt($newPort);
+        }
+
         return $this;
     }
 
