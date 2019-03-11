@@ -1,5 +1,10 @@
 # Release notes
 
+## 1.3.1
+
+* Added 443 as an ignored port when outputting Port as string.
+* Using default ports (80 or 443) when constructing Port.
+
 ## 1.3.0
 
 * Added the HttpAuth class for adding a username and password to a URL.
