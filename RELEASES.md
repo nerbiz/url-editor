@@ -1,5 +1,9 @@
 # Release notes
 
+## 1.5.1
+
+* Removed the option from UrlEditor::checkUrl() to throw an exception, it just returns a boolean now.
+
 ## 1.5.0
 
 * UrlEditor can now be constructed as an empty object, for performance reasons.
