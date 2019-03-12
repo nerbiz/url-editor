@@ -37,12 +37,8 @@ class Tld implements Stringable, Arrayable, Jsonable
     {
         // Get the TLD list from the file
         if ($tldList === null) {
-            $listFile = rtrim(dirname(__FILE__, 3), '/') . '/resources/iana-tlds.txt';
-            $listFileContents = file_get_contents($listFile);
-
-            // Get all the lines that are not comments and convert them to lowercase
-            preg_match_all('~^(?<tld>[^#].+)~m', $listFileContents, $matches);
-            $this->validTldList = array_filter(array_values(array_map('strtolower', $matches['tld'])));
+            $listFile = rtrim(dirname(__FILE__, 3), '/') . '/resources/iana-tlds.php';
+            $this->validTldList = $tldList = require $listFile;
 
             // Add the 'localhost' TLD
             $this->validTldList[] = 'localhost';
