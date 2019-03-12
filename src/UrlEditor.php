@@ -109,27 +109,12 @@ class UrlEditor implements Stringable
     /**
      * Check the validity of a URL
      * @param string $url
-     * @param bool   $throwException Whether to throw an exception
      * @return bool
      * @throws InvalidUrlException
      */
-    public function checkUrl(string $url, bool $throwException = true): bool
+    public function checkUrl(string $url): bool
     {
-        if (filter_var($url, FILTER_VALIDATE_URL) === false) {
-            // Throw an exception if needed
-            if ($throwException) {
-                throw new InvalidUrlException(sprintf(
-                    "%s(): invalid URL: '%s'",
-                    __METHOD__,
-                    is_object($url) ? get_class($url) : $url
-                ));
-            } else {
-                // Otherwise just return false
-                return false;
-            }
-        }
-
-        return true;
+        return (filter_var($url, FILTER_VALIDATE_URL) !== false);
     }
 
     /**
@@ -254,7 +239,14 @@ class UrlEditor implements Stringable
      */
     public function fromString(string $url): self
     {
-        $this->checkUrl($url);
+        if (! $this->checkUrl($url)) {
+            throw new InvalidUrlException(sprintf(
+                "%s(): invalid URL: '%s'",
+                __METHOD__,
+                is_object($url) ? get_class($url) : $url
+            ));
+        }
+
         $this->originalUrl = $url;
 
         // Get the parts of the URL
