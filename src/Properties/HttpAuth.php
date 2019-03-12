@@ -6,6 +6,7 @@ use Nerbiz\UrlEditor\Contracts\Arrayable;
 use Nerbiz\UrlEditor\Contracts\Jsonable;
 use Nerbiz\UrlEditor\Contracts\Stringable;
 use Nerbiz\UrlEditor\Exceptions\InvalidHttpAuthException;
+use Nerbiz\UrlEditor\Exceptions\InvalidJsonException;
 
 class HttpAuth implements Stringable, Arrayable, Jsonable
 {
