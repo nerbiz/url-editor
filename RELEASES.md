@@ -1,5 +1,9 @@
 # Release notes
 
+## 1.5.2
+
+* Added a missing use statement in HttpAuth.
+
 ## 1.5.1
 
 * Removed the option from UrlEditor::checkUrl() to throw an exception, it just returns a boolean now.
