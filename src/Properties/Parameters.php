@@ -37,7 +37,7 @@ class Parameters implements Stringable, Arrayable, Jsonable
     /**
      * {@inheritdoc}
      */
-    public function fromString(string $parameters): self
+    public function fromString(?string $parameters = null): self
     {
         // Trim question marks, ampersands and spaces
         $parameters = trim($parameters, '?& ');

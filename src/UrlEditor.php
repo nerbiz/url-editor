@@ -3,6 +3,7 @@
 namespace Nerbiz\UrlEditor;
 
 use Nerbiz\UrlEditor\Contracts\Stringable;
+use Nerbiz\UrlEditor\Exceptions\InvalidDomainBaseException;
 use Nerbiz\UrlEditor\Exceptions\InvalidUrlException;
 use Nerbiz\UrlEditor\Properties\Fragment;
 use Nerbiz\UrlEditor\Properties\Host;
@@ -76,47 +77,65 @@ class UrlEditor implements Stringable
     protected $isSecure;
 
     /**
-     * @param string|null $url The URL to work with, or current URL if null
+     * @param string|null $url The URL to work with
      * @throws InvalidUrlException
      */
     public function __construct(?string $url = null)
     {
         // Set a given URL, or use the current
-        if ($url !== null) {
-            $this->fromString($url);
-        } else {
-            $this->fromString(sprintf(
-                'http%s://%s%s',
-                (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 's' : '',
-                rtrim($_SERVER['HTTP_HOST'], '/'),
-                '/' . ltrim($_SERVER['REQUEST_URI'], '/')
-            ));
+        if (trim($url) !== '') {
+            if ($url === 'current') {
+                $this->fromString($this->getCurrentUrl());
+            } else {
+                $this->fromString($url);
+            }
         }
+    }
+
+    /**
+     * Get the current URL of the request
+     * @return string
+     */
+    public function getCurrentUrl(): string
+    {
+        return sprintf(
+            'http%s://%s%s',
+            (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 's' : '',
+            rtrim($_SERVER['HTTP_HOST'], '/'),
+            '/' . ltrim($_SERVER['REQUEST_URI'], '/')
+        );
     }
 
     /**
      * Check the validity of a URL
      * @param string $url
+     * @param bool   $throwException Whether to throw an exception
      * @return bool
      * @throws InvalidUrlException
      */
-    public function checkUrl(string $url): bool
+    public function checkUrl(string $url, bool $throwException = true): bool
     {
         if (filter_var($url, FILTER_VALIDATE_URL) === false) {
-            throw new InvalidUrlException(sprintf(
-                "%s(): invalid URL: '%s'",
-                __METHOD__,
-                is_object($url) ? get_class($url) : $url
-            ));
+            // Throw an exception if needed
+            if ($throwException) {
+                throw new InvalidUrlException(sprintf(
+                    "%s(): invalid URL: '%s'",
+                    __METHOD__,
+                    is_object($url) ? get_class($url) : $url
+                ));
+            } else {
+                // Otherwise just return false
+                return false;
+            }
         }
 
         return true;
     }
 
     /**
-     * @return bool
+     * @return bool|null
      */
-    public function isSecure(): bool
+    public function isSecure(): ?bool
     {
         return $this->isSecure;
     }
@@ -143,16 +162,21 @@ class UrlEditor implements Stringable
 
     /**
      * Get the base of the URL
-     * @return string
+     * @return string|null
      */
-    public function getBase(): string
+    public function getBase(): ?string
     {
+        if ($this->originalUrl === null) {
+            return null;
+        }
+
         $httpAuth = $this->getHttpAuth()->toString();
         $subdomains = $this->getSubdomains()->toString();
+        $tld = $this->getTld()->toString();
         $port = $this->getPort()->toString();
 
         $baseUrl = sprintf(
-            'http%s://%s%s%s.%s%s',
+            'http%s://%s%s%s%s%s',
             $this->isSecure() ? 's' : '',
             ($httpAuth !== '')
                 ? $httpAuth . '@'
@@ -161,23 +185,27 @@ class UrlEditor implements Stringable
                 ? $subdomains . '.'
                 : '',
             $this->domainBase,
-            $this->getTld()->toString(),
+            ($tld !== '')
+                ? '.' . $tld
+                : '',
             ($port !== '')
                 ? ':' . $port
                 : ''
         );
 
-        // See if the URL is valid
-        $this->checkUrl($baseUrl);
         return $baseUrl;
     }
 
     /**
      * Get the full URL
-     * @return string
+     * @return string|null
      */
-    public function getFull(): string
+    public function getFull(): ?string
     {
+        if ($this->originalUrl === null) {
+            return null;
+        }
+
         $slugs = $this->getSlugs()->toString();
         $parameters = $this->getParameters()->toString();
         $fragment = $this->getFragment()->toString();
@@ -197,18 +225,20 @@ class UrlEditor implements Stringable
                 : ''
         );
 
-        // See if the URL is valid
-        $this->checkUrl($fullUrl);
         return $fullUrl;
     }
 
     /**
      * Redirect to the full URL
      * @param int $statusCode The HTTP status code of the redirect
-     * @return void
+     * @return bool False if failed
      */
-    public function redirect(int $statusCode = 302): void
+    public function redirect(int $statusCode = 302): bool
     {
+        if ($this->originalUrl === null) {
+            return false;
+        }
+
         header(
             sprintf('Location: %s', $this->getFull()),
             true,
@@ -250,12 +280,14 @@ class UrlEditor implements Stringable
         if ($this->tld === null) {
             $this->tld = new Tld($this->urlParts['host']);
         } else {
-            $this->tld->fromHost($this->urlParts['host']);
+            $this->tld->fromString($this->urlParts['host']);
         }
 
         // Get the domain name without the TLD and split it by '.'
         $tld = $this->getTld()->toString();
-        $hostWithoutTld = trim(mb_substr($this->urlParts['host'], 0, (0 - strlen($tld))), '.');
+        $hostWithoutTld = (mb_strlen($tld) > 0)
+            ? trim(mb_substr($this->urlParts['host'], 0, (0 - mb_strlen($tld))), '.')
+            : $this->urlParts['host'];
         $parts = explode('.', $hostWithoutTld);
 
         // The last entry is the domain base
@@ -266,7 +298,7 @@ class UrlEditor implements Stringable
         if ($this->subdomains === null) {
             $this->subdomains = new Subdomains($parts);
         } else {
-            $this->subdomains->fromString($parts);
+            $this->subdomains->fromArray($parts);
         }
 
         // Create or update the Port object
@@ -320,9 +352,9 @@ class UrlEditor implements Stringable
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getDomainBase(): string
+    public function getDomainBase(): ?string
     {
         return $this->domainBase;
     }
@@ -330,76 +362,86 @@ class UrlEditor implements Stringable
     /**
      * @param string $domainBase
      * @return self
+     * @throws InvalidDomainBaseException
      */
     public function setDomainBase(string $domainBase): self
     {
-        $this->domainBase = trim($domainBase);
+        $domainBase = trim($domainBase);
+
+        if (mb_strpos($domainBase, '.') !== false) {
+            throw new InvalidDomainBaseException(sprintf(
+                "%s(): domain base cannot contain periods, use subdomains or TLD instead",
+                __METHOD__
+            ));
+        }
+
+        $this->domainBase = $domainBase;
 
         return $this;
     }
 
     /**
-     * @return HttpAuth
+     * @return HttpAuth|null
      */
-    public function getHttpAuth(): HttpAuth
+    public function getHttpAuth(): ?HttpAuth
     {
         return $this->httpAuth;
     }
 
     /**
-     * @return Subdomains
+     * @return Subdomains|null
      */
-    public function getSubdomains(): Subdomains
+    public function getSubdomains(): ?Subdomains
     {
         return $this->subdomains;
     }
 
     /**
-     * @return Tld
+     * @return Tld|null
      */
-    public function getTld(): Tld
+    public function getTld(): ?Tld
     {
         return $this->tld;
     }
 
     /**
-     * @return Port
+     * @return Port|null
      */
-    public function getPort(): Port
+    public function getPort(): ?Port
     {
         return $this->port;
     }
 
     /**
-     * @return Slugs
+     * @return Slugs|null
      */
-    public function getSlugs(): Slugs
+    public function getSlugs(): ?Slugs
     {
         return $this->slugs;
     }
 
     /**
-     * @return Parameters
+     * @return Parameters|null
      */
-    public function getParameters(): Parameters
+    public function getParameters(): ?Parameters
     {
         return $this->parameters;
     }
 
     /**
-     * @return Fragment
+     * @return Fragment|null
      */
-    public function getFragment(): Fragment
+    public function getFragment(): ?Fragment
     {
         return $this->fragment;
     }
 
     /**
      * Alias of getFragment()
-     * @return Fragment
+     * @return Fragment|null
      * @see UrlEditor::getFragment()
      */
-    public function getAnchor(): Fragment
+    public function getAnchor(): ?Fragment
     {
         return $this->getFragment();
     }

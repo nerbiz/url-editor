@@ -22,7 +22,7 @@ class Fragment implements Stringable
     /**
      * {@inheritdoc}
      */
-    public function fromString(string $fragment): self
+    public function fromString(?string $fragment = null): self
     {
         // Trim hashes and spaces
         $this->fragment = trim($fragment, '# ');
