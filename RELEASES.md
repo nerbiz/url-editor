@@ -1,5 +1,13 @@
 # Release notes
 
+## 1.5.0
+
+* UrlEditor can now be constructed as an empty object, for performance reasons.
+* Domains without TLDs are now supported, like https://localhost.
+* Removed Tld::fromHost(), moved the logic to Tld::fromString().
+* Slightly better performance when getting valid TLD list.
+* A number of fixes.
+
 ## 1.4.1
 
 * The port number is now updated when changing isSecure.
