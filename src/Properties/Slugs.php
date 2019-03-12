@@ -37,7 +37,7 @@ class Slugs implements Stringable, Arrayable, Jsonable
     /**
      * {@inheritdoc}
      */
-    public function fromString(string $slugs): self
+    public function fromString(?string $slugs = null): self
     {
         return $this->fromArray(explode('/', $slugs));
     }

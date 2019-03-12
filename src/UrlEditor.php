@@ -3,6 +3,7 @@
 namespace Nerbiz\UrlEditor;
 
 use Nerbiz\UrlEditor\Contracts\Stringable;
+use Nerbiz\UrlEditor\Exceptions\InvalidDomainBaseException;
 use Nerbiz\UrlEditor\Exceptions\InvalidUrlException;
 use Nerbiz\UrlEditor\Properties\Fragment;
 use Nerbiz\UrlEditor\Properties\Host;
@@ -149,10 +150,11 @@ class UrlEditor implements Stringable
     {
         $httpAuth = $this->getHttpAuth()->toString();
         $subdomains = $this->getSubdomains()->toString();
+        $tld = $this->getTld()->toString();
         $port = $this->getPort()->toString();
 
         $baseUrl = sprintf(
-            'http%s://%s%s%s.%s%s',
+            'http%s://%s%s%s%s%s',
             $this->isSecure() ? 's' : '',
             ($httpAuth !== '')
                 ? $httpAuth . '@'
@@ -161,7 +163,9 @@ class UrlEditor implements Stringable
                 ? $subdomains . '.'
                 : '',
             $this->domainBase,
-            $this->getTld()->toString(),
+            ($tld !== '')
+                ? '.' . $tld
+                : '',
             ($port !== '')
                 ? ':' . $port
                 : ''
@@ -250,12 +254,14 @@ class UrlEditor implements Stringable
         if ($this->tld === null) {
             $this->tld = new Tld($this->urlParts['host']);
         } else {
-            $this->tld->fromHost($this->urlParts['host']);
+            $this->tld->fromString($this->urlParts['host']);
         }
 
         // Get the domain name without the TLD and split it by '.'
         $tld = $this->getTld()->toString();
-        $hostWithoutTld = trim(mb_substr($this->urlParts['host'], 0, (0 - strlen($tld))), '.');
+        $hostWithoutTld = (mb_strlen($tld) > 0)
+            ? trim(mb_substr($this->urlParts['host'], 0, (0 - mb_strlen($tld))), '.')
+            : $this->urlParts['host'];
         $parts = explode('.', $hostWithoutTld);
 
         // The last entry is the domain base
@@ -266,7 +272,7 @@ class UrlEditor implements Stringable
         if ($this->subdomains === null) {
             $this->subdomains = new Subdomains($parts);
         } else {
-            $this->subdomains->fromString($parts);
+            $this->subdomains->fromArray($parts);
         }
 
         // Create or update the Port object
@@ -330,10 +336,20 @@ class UrlEditor implements Stringable
     /**
      * @param string $domainBase
      * @return self
+     * @throws InvalidDomainBaseException
      */
     public function setDomainBase(string $domainBase): self
     {
-        $this->domainBase = trim($domainBase);
+        $domainBase = trim($domainBase);
+
+        if (mb_strpos($domainBase, '.') !== false) {
+            throw new InvalidDomainBaseException(sprintf(
+                "%s(): domain base cannot contain periods, use subdomains or TLD instead",
+                __METHOD__
+            ));
+        }
+
+        $this->domainBase = $domainBase;
 
         return $this;
     }

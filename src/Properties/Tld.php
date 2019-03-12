@@ -25,7 +25,7 @@ class Tld implements Stringable, Arrayable, Jsonable
     public function __construct(string $host)
     {
         $this->setValidTldList();
-        $this->fromHost($host);
+        $this->fromString($host);
     }
 
     /**
@@ -42,7 +42,10 @@ class Tld implements Stringable, Arrayable, Jsonable
 
             // Get all the lines that are not comments and convert them to lowercase
             preg_match_all('~^(?<tld>[^#].+)~m', $listFileContents, $matches);
-            $this->validTldList = array_map('strtolower', $matches['tld']);
+            $this->validTldList = array_filter(array_values(array_map('strtolower', $matches['tld'])));
+
+            // Add the 'localhost' TLD
+            $this->validTldList[] = 'localhost';
         } else {
             $this->validTldList = $tldList;
         }
@@ -51,17 +54,24 @@ class Tld implements Stringable, Arrayable, Jsonable
     }
 
     /**
-     * Derive the TLD from a host
-     * @param string $host
-     * @return self
+     * {@inheritdoc}
+     * @throws InvalidTldException
      */
-    public function fromHost(string $host): self
+    public function fromString(string $tld): self
     {
         $tlds = [];
         // Reverse the parts, so the TLD(s) are the first items
-        $hostParts = array_reverse(explode('.', $host));
+        $parts = array_reverse(explode('.', $tld));
 
-        foreach ($hostParts as $hostPart) {
+        foreach ($parts as $key => $hostPart) {
+            // Skip the last entry, because that is the domain name
+            // https://localhost -> no TLD
+            // https://localhost.dev -> .dev
+            // https://test.localhost.dev -> .localhost.dev
+            if ($key === (count($parts) - 1)) {
+                break;
+            }
+
             // Keep the TLD if it matches
             if (in_array(strtolower($hostPart), $this->validTldList, true)) {
                 $tlds[] = $hostPart;
@@ -73,15 +83,6 @@ class Tld implements Stringable, Arrayable, Jsonable
 
         // Reverse the array again, to get the original order
         return $this->fromArray(array_reverse($tlds));
-    }
-
-    /**
-     * {@inheritdoc}
-     * @throws InvalidTldException
-     */
-    public function fromString(string $tld): self
-    {
-        return $this->fromArray(explode('.', $tld));
     }
 
     /**
