@@ -1,5 +1,9 @@
 # Release notes
 
+## 1.5.3
+
+* The list of valid TLDs is now static for better performance.
+
 ## 1.5.2
 
 * Added a missing use statement in HttpAuth.
