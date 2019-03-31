@@ -15,36 +15,35 @@ class Tld implements Stringable, Arrayable, Jsonable
 
     /**
      * The complete list of all TLDs
-     * @var array
+     * @var array|null
      */
-    protected $validTldList;
+    protected static $validTldList = null;
 
     /**
      * @param string $host The host to derive the TLD from
+     * @see https://data.iana.org/TLD/tlds-alpha-by-domain.txt
      */
     public function __construct(string $host)
     {
-        $this->setValidTldList();
+        // Set the valid TLD list if it's not set yet
+        if (static::$validTldList === null) {
+            $listFile = rtrim(dirname(__FILE__, 3), '/') . '/resources/iana-tlds.php';
+            static::$validTldList = require $listFile;
+
+            // Add the 'localhost' TLD
+            static::$validTldList[] = 'localhost';
+        }
+
         $this->fromString($host);
     }
 
     /**
-     * @param array|null $tldList Sets the default list if null
+     * @param array $tldList Sets the default list
      * @return self
-     * @see https://data.iana.org/TLD/tlds-alpha-by-domain.txt
      */
-    public function setValidTldList(?array $tldList = null): self
+    public function setValidTldList(array $tldList): self
     {
-        // Get the TLD list from the file
-        if ($tldList === null) {
-            $listFile = rtrim(dirname(__FILE__, 3), '/') . '/resources/iana-tlds.php';
-            $this->validTldList = $tldList = require $listFile;
-
-            // Add the 'localhost' TLD
-            $this->validTldList[] = 'localhost';
-        } else {
-            $this->validTldList = $tldList;
-        }
+        static::$validTldList = $tldList;
 
         return $this;
     }
@@ -69,7 +68,7 @@ class Tld implements Stringable, Arrayable, Jsonable
             }
 
             // Keep the TLD if it matches
-            if (in_array(strtolower($hostPart), $this->validTldList, true)) {
+            if (in_array(strtolower($hostPart), static::$validTldList, true)) {
                 $tlds[] = $hostPart;
             } else {
                 // Stop looping when no match was found
@@ -110,7 +109,7 @@ class Tld implements Stringable, Arrayable, Jsonable
 
         // See if any invalid TLDs are given
         foreach ($tld as $tldPart) {
-            if (! in_array(strtolower($tldPart), $this->validTldList, true)) {
+            if (! in_array(strtolower($tldPart), static::$validTldList, true)) {
                 throw new InvalidTldException(sprintf(
                     "%s() expects a valid TLD, '%s' in '%s' is invalid",
                     __METHOD__,
