@@ -6,7 +6,6 @@ use Nerbiz\UrlEditor\Contracts\Stringable;
 use Nerbiz\UrlEditor\Exceptions\InvalidDomainBaseException;
 use Nerbiz\UrlEditor\Exceptions\InvalidUrlException;
 use Nerbiz\UrlEditor\Properties\Fragment;
-use Nerbiz\UrlEditor\Properties\Host;
 use Nerbiz\UrlEditor\Properties\HttpAuth;
 use Nerbiz\UrlEditor\Properties\Parameters;
 use Nerbiz\UrlEditor\Properties\Port;
@@ -146,6 +145,31 @@ class UrlEditor implements Stringable
     }
 
     /**
+     * Get the host part of the URL
+     * @return string|null
+     */
+    public function getHost(): ?string
+    {
+        if ($this->originalUrl === null) {
+            return null;
+        }
+
+        $subdomains = $this->getSubdomains()->toString();
+        $tld = $this->getTld()->toString();
+
+        return sprintf(
+            '%s%s%s',
+            ($subdomains !== '')
+                ? $subdomains . '.'
+                : '',
+            $this->getDomainBase(),
+            ($tld !== '')
+                ? '.' . $tld
+                : ''
+        );
+    }
+
+    /**
      * Get the base of the URL
      * @return string|null
      */
@@ -156,29 +180,19 @@ class UrlEditor implements Stringable
         }
 
         $httpAuth = $this->getHttpAuth()->toString();
-        $subdomains = $this->getSubdomains()->toString();
-        $tld = $this->getTld()->toString();
         $port = $this->getPort()->toString();
 
-        $baseUrl = sprintf(
-            'http%s://%s%s%s%s%s',
+        return sprintf(
+            'http%s://%s%s%s',
             $this->isSecure() ? 's' : '',
             ($httpAuth !== '')
                 ? $httpAuth . '@'
                 : '',
-            ($subdomains !== '')
-                ? $subdomains . '.'
-                : '',
-            $this->domainBase,
-            ($tld !== '')
-                ? '.' . $tld
-                : '',
+            $this->getHost(),
             ($port !== '')
                 ? ':' . $port
                 : ''
         );
-
-        return $baseUrl;
     }
 
     /**
@@ -284,7 +298,7 @@ class UrlEditor implements Stringable
 
         // The last entry is the domain base
         // The remaining parts (if any) are the subdomains
-        $this->domainBase = array_pop($parts);
+        $this->setDomainBase(array_pop($parts));
 
         // Create or update the Subdomains object
         if ($this->subdomains === null) {
