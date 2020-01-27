@@ -115,7 +115,7 @@ class Port implements Intable, Stringable
      */
     public static function getInsecureHttpPort(): int
     {
-        return self::$insecureHttpPort;
+        return static::$insecureHttpPort;
     }
 
     /**
@@ -124,7 +124,7 @@ class Port implements Intable, Stringable
      */
     public static function setInsecureHttpPort(int $insecureHttpPort): void
     {
-        self::$insecureHttpPort = $insecureHttpPort;
+        static::$insecureHttpPort = $insecureHttpPort;
     }
 
     /**
@@ -132,7 +132,7 @@ class Port implements Intable, Stringable
      */
     public static function getSecureHttpPort(): int
     {
-        return self::$secureHttpPort;
+        return static::$secureHttpPort;
     }
 
     /**
@@ -141,6 +141,6 @@ class Port implements Intable, Stringable
      */
     public static function setSecureHttpPort(int $secureHttpPort): void
     {
-        self::$secureHttpPort = $secureHttpPort;
+        static::$secureHttpPort = $secureHttpPort;
     }
 }
