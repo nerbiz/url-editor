@@ -60,9 +60,9 @@ class Tld implements Stringable, Arrayable, Jsonable
 
         foreach ($parts as $key => $hostPart) {
             // Skip the last entry, because that is the domain name
-            // https://localhost -> no TLD
-            // https://localhost.dev -> .dev
-            // https://test.localhost.dev -> .localhost.dev
+            // 'localhost' -> no TLD
+            // 'localhost.dev' -> .dev
+            // 'test.localhost.dev' -> .localhost.dev
             if ($key === (count($parts) - 1)) {
                 break;
             }
