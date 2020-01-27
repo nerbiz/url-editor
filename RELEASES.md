@@ -1,5 +1,10 @@
 # Release notes
 
+## 1.6.0
+
+* Added UrlEditor::getHost(), to get the hostname, without protocol, optional credentials and port.
+* Added Tld::fromHost(), to fix a bug with Tld::fromString().
+
 ## 1.5.3
 
 * The list of valid TLDs is now static for better performance.
