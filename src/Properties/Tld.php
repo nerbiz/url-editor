@@ -20,10 +20,9 @@ class Tld implements Stringable, Arrayable, Jsonable
     protected static $validTldList = null;
 
     /**
-     * @param string $host The host to derive the TLD from
      * @see https://data.iana.org/TLD/tlds-alpha-by-domain.txt
      */
-    public function __construct(string $host)
+    public function __construct()
     {
         // Set the valid TLD list if it's not set yet
         if (static::$validTldList === null) {
@@ -33,8 +32,6 @@ class Tld implements Stringable, Arrayable, Jsonable
             // Add the 'localhost' TLD
             static::$validTldList[] = 'localhost';
         }
-
-        $this->fromString($host);
     }
 
     /**
@@ -49,14 +46,15 @@ class Tld implements Stringable, Arrayable, Jsonable
     }
 
     /**
-     * {@inheritdoc}
-     * @throws InvalidTldException
+     *
+     * @param string $hostName
+     * @return self
      */
-    public function fromString(string $tld): self
+    public function fromHost(string $hostName): self
     {
         $tlds = [];
         // Reverse the parts, so the TLD(s) are the first items
-        $parts = array_reverse(explode('.', $tld));
+        $parts = array_reverse(explode('.', $hostName));
 
         foreach ($parts as $key => $hostPart) {
             // Skip the last entry, because that is the domain name
@@ -78,6 +76,15 @@ class Tld implements Stringable, Arrayable, Jsonable
 
         // Reverse the array again, to get the original order
         return $this->fromArray(array_reverse($tlds));
+    }
+
+    /**
+     * {@inheritdoc}
+     * @throws InvalidTldException
+     */
+    public function fromString(string $tld): self
+    {
+        return $this->fromArray(explode('.', $tld));
     }
 
     /**
@@ -111,10 +118,9 @@ class Tld implements Stringable, Arrayable, Jsonable
         foreach ($tld as $tldPart) {
             if (! in_array(strtolower($tldPart), static::$validTldList, true)) {
                 throw new InvalidTldException(sprintf(
-                    "%s() expects a valid TLD, '%s' in '%s' is invalid",
+                    "%s() expects a valid TLD, '%s' is invalid",
                     __METHOD__,
-                    $tldPart,
-                    $tld
+                    $tldPart
                 ));
             }
         }

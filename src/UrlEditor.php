@@ -282,17 +282,16 @@ class UrlEditor implements Stringable
             ]);
         }
 
-        // Create or update the Tld object
+        // Create and/or update the Tld object
         if ($this->tld === null) {
-            $this->tld = new Tld($this->urlParts['host']);
-        } else {
-            $this->tld->fromString($this->urlParts['host']);
+            $this->tld = new Tld();
         }
+        $this->tld->fromHost($this->urlParts['host']);
 
         // Get the domain name without the TLD and split it by '.'
-        $tld = $this->getTld()->toString();
-        $hostWithoutTld = (mb_strlen($tld) > 0)
-            ? trim(mb_substr($this->urlParts['host'], 0, (0 - mb_strlen($tld))), '.')
+        $tldString = $this->tld->toString();
+        $hostWithoutTld = (mb_strlen($tldString) > 0)
+            ? trim(mb_substr($this->urlParts['host'], 0, (0 - mb_strlen($tldString))), '.')
             : $this->urlParts['host'];
         $parts = explode('.', $hostWithoutTld);
 
